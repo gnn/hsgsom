@@ -2,7 +2,7 @@ module Main where
 
 import System.Environment(getArgs)
 
-import Gsom.Gsom
+import Gsom
 
 main :: IO ()
 main = do 

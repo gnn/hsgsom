@@ -1,4 +1,4 @@
-module Gsom.Gsom where
+module Gsom where
 
 import Data.List(transpose)
 import System.Random(Random, RandomGen, randomR, split)
