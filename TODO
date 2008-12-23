@@ -1,0 +1,2 @@
+- The implementation of normalize in gsom is wrong. Fix this and add a 
+  corrsponding tes.
