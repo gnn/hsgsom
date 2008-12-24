@@ -1,2 +1,4 @@
-- The implementation of normalize in gsom is wrong. Fix this and add a 
-  corrsponding tes.
+gsom.hs:
+  - add test to check whether normlize acs as id on inputs which are already 
+    between 0 and 1 and which have active bounds 
+    (NOTE: this is different from normlize/idempotent) 
