@@ -9,7 +9,7 @@ import Prelude hiding (Either(..))
 import Test.QuickCheck
 
 -- Modules which are only imported so that functions of them can be tested.
-import Gsom(normalize)
+import Gsom.Input(normalize)
 
 data Alignment = Left | Right
 
