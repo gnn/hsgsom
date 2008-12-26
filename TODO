@@ -1,12 +1,11 @@
 gsom.hs:
-  - make the damn thing compile. The best way is probably not to use so many 
+  - Find a way to to express the gsom algorithm. 
+    The best way is probably not to use so many 
     datatypes and just treat gsom as a function getting input and producing 
     a grid which quantizes the input. 
     State which has to be maintained could be saved as parameters fixed by 
     currying. This includes the current grid, the spread factor, the current
     learning rate and so forth...
-tests:
-  - make darcs run tests.hs on each record. darcs setpref "runhaskell tests.hs"
 tests.hs:
   - add test to check whether normlize acs as id on inputs which are already 
     between 0 and 1 and which have active bounds 
