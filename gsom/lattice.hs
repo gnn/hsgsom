@@ -1,7 +1,7 @@
 -- | This module contains everything concerning the lattice which is build
 -- buy gsom.
 
-module Gsom.Grid where 
+module Gsom.Lattice where 
 
 -- Standard modules
 import System.Random(Random, RandomGen, randomRs, split)
