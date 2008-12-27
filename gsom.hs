@@ -1,4 +1,10 @@
+{-# LANGUAGE ExistentialQuantification #-}
+
 module Gsom where
+
+import System.Random
+
+import Gsom.Lattice(Nodes)
 
 -- | These are the parameters needed to create a growing self organizing map.
 data Parameters = forall g. (RandomGen g) => Parameters {
