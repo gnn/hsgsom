@@ -9,4 +9,6 @@ gsom.hs:
 tests.hs:
   - add test to check whether normlize acs as id on inputs which are already 
     between 0 and 1 and which have active bounds 
-    (NOTE: this is different from normlize/idempotent) 
+    (NOTE: this is different from normlize/idempotent)
+    
+  -add tests for distance and bmu 
