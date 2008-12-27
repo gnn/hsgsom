@@ -35,6 +35,10 @@ type Lattice = Nodes
 node :: Int -> Input -> Nodes -> Node
 node id ws ns = Node id ns 0 ws
 
+
+-- | @'new' g inputs@ creates a new minimal lattice where weights are randomly
+-- initialized with values between 0 and 1 using the random number generator g
+-- and with the weight vectors having dimension equal to the input dimension.
 new :: RandomGen g => g -> Inputs -> Lattice
 new g is = [a, b, c, d] where 
   a = node 0 (weights 0) [Leaf, Leaf, b, d]
