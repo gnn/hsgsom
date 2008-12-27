@@ -22,4 +22,8 @@ normalize is = map (map scale) $ map (zip3 mins maxs) is where
 dimension :: Inputs -> Int
 dimension = maximum . map length
 
+-- | @'distance' i1 i2@ calculates the euclidean distance between i1 and i2
+-- If @i1@ and @i2@ have different lengths, excess values are ignored.
+distance :: Input -> Input -> Double
+distance i1 i2 = sqrt $ sum $ zipWith (\a b -> (a-b)**2) i1 i2
 
