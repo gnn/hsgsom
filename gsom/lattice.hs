@@ -45,5 +45,5 @@ new g is = [a, b, c, d] where
   b = node 1 (weights 1) [a, Leaf, Leaf, c]
   c = node 2 (weights 2) [a, b, Leaf, Leaf]
   d = node 3 (weights 3) [Leaf, a, c, Leaf]
-  weights n = take (dimension is) $ randomRs (gs!!n) (0, 1)
+  weights n = take (dimension is) $ randomRs (0, 1) (gs g !! n)
   gs g = let (g1, g2) = split g in g1 : gs g2 
