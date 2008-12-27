@@ -47,3 +47,15 @@ new g is = [a, b, c, d] where
   d = node 3 (weights 3) [Leaf, a, c, Leaf]
   weights n = take (dimension is) $ randomRs (0, 1) (gs g !! n)
   gs g = let (g1, g2) = split g in g1 : gs g2 
+
+-- | @'bmu' input lattice@ returns the best matching unit i.e. the node with
+-- minimal distance to the given input vector.
+bmu :: Input -> Lattice -> Node
+bmu i l = case l of
+  [] -> error "error in bmu: empty lattices shouldn't occur."
+  (x:xs) -> bmu' x xs where
+    bmu' current remaining = case remaining of 
+      [] -> current
+      (x:xs) -> if (distance i $ weight current) <= (distance i $ weight x)
+        then bmu' current xs else bmu' x xs
+
