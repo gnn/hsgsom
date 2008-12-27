@@ -7,7 +7,7 @@ module Gsom.Grid where
 import System.Random(Random, RandomGen, randomRs, split)
 
 -- Private modules
-import Gsom.Input
+import Gsom.Input(Input, Inputs, dimension, distance)
 
 -- | The nodes of a gsom are either Leafs, signalling neighbours of boundary 
 -- nodes or they are actual nodes with an id, a weight vector, 
