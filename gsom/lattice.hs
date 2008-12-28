@@ -7,7 +7,7 @@ module Gsom.Lattice where
 import System.Random(Random, RandomGen, randomRs, split)
 
 -- Private modules
-import Gsom.Input(Input, Inputs, dimension, distance)
+import Gsom.Input(Input, Inputs, dimension, distance, (<+>), (<->), (.*))
 
 -- | The nodes of a gsom are either Leafs, signalling neighbours of boundary 
 -- nodes or they are actual nodes with an id, a weight vector, 
@@ -58,4 +58,11 @@ bmu i l = case l of
       [] -> current
       (x:xs) -> if (distance i $ weight current) <= (distance i $ weight x)
         then bmu' current xs else bmu' x xs
+
+-- | @'update' input learning_rate nodes@ updates the weights of the given 
+-- nodes according to the formula 
+-- * @\weight -> weight + learning_rate'.*'(input '<->' weight)@
+-- and returns the new nodes.
+update :: Input -> Double -> Nodes -> Nodes
+update i lr = map $ \n -> n {weight = weight n <+> lr .* (i <-> weight n)}
 
