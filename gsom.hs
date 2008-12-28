@@ -21,10 +21,10 @@ data Parameters = forall g. (RandomGen g) => Parameters {
   spreadFactor  :: Double
 }
 
--- | At each iteration step the gsom consists of the grid of current nodes, 
+-- | At each iteration step the gsom consists of the lattice of current nodes, 
 -- the current learning rate and the parameters used to create the map.
 data Gsom = Gsom {
-  grid          :: Nodes
+  lattice       :: Nodes
 , learningRate  :: Double
 , parameters    :: Parameters
 }
