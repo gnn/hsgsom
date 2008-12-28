@@ -28,7 +28,7 @@ instance Show Node where
 type Nodes = [Node]
 
 
--- | For non a lattice is just a list of nodes.
+-- | For now a lattice is just a list of nodes.
 type Lattice = Nodes 
 
 -- | @'node' weight neighbours@ creates a node with the specified parameters.
