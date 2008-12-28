@@ -1,0 +1,20 @@
+Name:               Gsom
+Version:            0.0
+Cabal-Version:      >= 1.6.0.1
+Build-Type:         Simple
+License:            BSD3
+License-File:       LICENSE
+Data-Files:         README
+Author:             Stephan Günther
+Maintainer:         Stephan Günther <gnn.github@gmail.com>
+Category:           Datamining, Clustering
+Synopsis:           An implementation of the GSOM clustering algorithm.
+Description:
+  See <http://en.wikipedia.org/wiki/GSOM> for an explanation of the algorithm.
+
+Library
+  Build-Depends:    base, random
+  Exposed-Modules:  Gsom
+  Other-Modules:    Gsom.Lattice, Gsom.Input
+  Extensions:       ExistentialQuantification
+
