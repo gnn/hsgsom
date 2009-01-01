@@ -12,3 +12,13 @@ tests.hs:
     (NOTE: this is different from normlize/idempotent)
     
   -add tests for distance and bmu 
+
+node.hs/lattice.hs:
+  - I'm not happy with the whole Node/Nodes/GsomNode/GsomNodes thing. 
+    To me it looks like there should be two different modules for generic
+    parameterized nodes and one for a specialization to nodes containing
+    NodeData. 
+
+lattice.hs:
+  - find a better way to express update and where to move it.
+
