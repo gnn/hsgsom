@@ -29,14 +29,14 @@ new g is = [a, b, c, d] where
 
 -- | @'bmu' input lattice@ returns the best matching unit i.e. the node with
 -- minimal distance to the given input vector.
-bmu :: Input -> Lattice -> Node
-bmu i l = case l of
+bmu :: Input -> Lattice -> GsomNode
+bmu i l = let weight = nodeWeight . value in case l of
   [] -> error "error in bmu: empty lattices shouldn't occur."
   (x:xs) -> bmu' x xs where
     bmu' current remaining = case remaining of 
       [] -> current
       (x:xs) -> if (distance i $ weight current) <= (distance i $ weight x)
-        then bmu' current xs else bmu' x xs
+        then bmu' current xs else bmu' x xs 
 
 -- | @'update' input learning_rate nodes@ updates the weights of the given 
 -- nodes according to the formula 
