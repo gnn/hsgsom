@@ -8,33 +8,12 @@ import System.Random(Random, RandomGen, randomRs, split)
 
 -- Private modules
 import Gsom.Input(Input, Inputs, dimension, distance, (<+>), (<->), (.*))
+import Gsom.Node
 
--- | The nodes of a gsom are either Leafs, signalling neighbours of boundary 
--- nodes or they are actual nodes with an id, a weight vector, 
--- an error value and a list of neighbouring nodes.
-data Node = Leaf | Node { 
-  id              :: Int
-, neighbours      :: Nodes
-, node_error      :: Double
-, weight          :: Input
-} 
-
-instance Show Node where 
-  show Leaf = "(Leaf)"
-  show node = " " ++
-    "( w = " ++ (show $ weight node) ++ 
-    ", E = " ++ (show $ node_error node) ++ " ) "
-
-type Nodes = [Node]
-
-
--- | For now a lattice is just a list of nodes.
-type Lattice = Nodes 
-
--- | @'node' weight neighbours@ creates a node with the specified parameters.
-node :: Int -> Input -> Nodes -> Node
-node id ws ns = Node id ns 0 ws
-
+-- | For now a lattice is just a list of nodes. Every node should be reachable 
+-- from every other node so a lattice might as well be represented by one 
+-- single node but this approach 
+type Lattice = GsomNodes
 
 -- | @'new' g inputs@ creates a new minimal lattice where weights are randomly
 -- initialized with values between 0 and 1 using the random number generator g
