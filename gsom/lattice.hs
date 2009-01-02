@@ -38,10 +38,13 @@ bmu i l = let weight = nodeWeight . value in case l of
       (x:xs) -> if (distance i $ weight current) <= (distance i $ weight x)
         then bmu' current xs else bmu' x xs 
 
--- | @'update' input learning_rate nodes@ updates the weights of the given 
--- nodes according to the formula 
+-- | @'update' input learning_rate ids node@ traverses the whole map updating 
+-- the weights of the nodes which have @'nodeId'@s matching those in ids
+-- according to the formula: 
 -- * @\weight -> weight + learning_rate'.*'(input '<->' weight)@
--- and returns the new nodes.
-update :: Input -> Double -> Nodes -> Nodes
-update i lr = map $ \n -> n {weight = weight n <+> lr .* (i <-> weight n)}
+-- and returns the new gsom.
+update :: Input -> Double -> [Int] -> GsomNode -> GsomNode
+update i lr ids gsom = fmap (
+  \v -> if nodeId v `elem` ids then adjust v else id v) gsom where 
+  adjust v = v{nodeWeight = nodeWeight v <+> lr .* (i <-> nodeWeight v)}
 
