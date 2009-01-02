@@ -4,7 +4,7 @@ module Gsom(Gsom(..), Parameters(..), Input, Inputs) where
 
 import System.Random
 
-import Gsom.Lattice(Nodes)
+import Gsom.Lattice(Lattice)
 import Gsom.Input(Input, Inputs)
 
 -- | These are the parameters needed to create a growing self organizing map.
@@ -24,7 +24,7 @@ data Parameters = forall g. (RandomGen g) => Parameters {
 -- | At each iteration step the gsom consists of the lattice of current nodes, 
 -- the current learning rate and the parameters used to create the map.
 data Gsom = Gsom {
-  lattice       :: Nodes
+  lattice       :: Lattice
 , learningRate  :: Double
 , parameters    :: Parameters
 }
