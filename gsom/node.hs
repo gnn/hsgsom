@@ -2,31 +2,37 @@
 -- lattice which comprises a gsom. 
 module Gsom.Node where 
 
-import Gsom.Input(Input)
+-- Modules from the standard library.
+import Control.Concurrent.STM
 
--- | This is the type of data stored in a gsom node which is not related to 
--- neighbourhood information. It is used so that @'Node'@ can be parameterized 
--- over a type and made an instance of @'Functor'@.
-data NodeData = NodeData { 
-  -- | Used to uniquely identify nodes. For new nodes this should be set to
-  -- the current size of the gsom+1 to ensure that @'nodeId'@ is unique.
-  nodeId    :: Int
-, -- | The error value the node has accumulated so far.
-  nodeError :: Double
-, -- | The nodes weight vector. This is the center of the voronoi cell the 
-  -- node represents.
-  nodeWeight:: Input
-} 
+-- Modules private to this library.
+import Gsom.Input(Input) 
 
 -- | The nodes of a gsom are either Leafs, signalling neighbours of boundary 
--- nodes or they are actual nodes with an associated value and a list of 
+-- nodes or they are actual nodes with a few associated values and a list of 
 -- neighbouring nodes.
-data Node a = Leaf | Node { value :: a, neighbours :: Nodes a}
-type Nodes a = [Node a]
-type GsomNode = Node NodeData
-type GsomNodes = [GsomNode]
+data Node = Leaf | 
+  Node { 
+  -- | Used to uniquely identify nodes. For new nodes this should be set to
+  -- the current size of the gsom+1 to ensure that @'iD'@ is unique. 
+  -- Since @'iD'@ also shouldn't change after the node is created it is not 
+  -- stored in a @'TVar'@.
+  iD :: Int
+  , -- | The quantization error the node has accumulated so far.
+  quantizationError :: TVar Double
+  , -- | The nodes weight vector. This is the center of the voronoi cell the 
+    -- node represents.
+  weights :: TVar Input
+  , -- | The list of the nodes neighbours.
+  neighbours :: TVar Nodes}
+type Nodes = [Node]
 
--- | @'node' weight neighbours@ creates a node with the specified parameters.
-node :: Int -> Input -> GsomNodes -> GsomNode
-node id ws ns = Node (NodeData id 0 ws) ns
+-- | @'node' id weights neighbours@ creates a node with the specified 
+-- parameters.
+node :: Int -> Input -> Nodes -> STM Node
+node iD weights neighbours = do
+  wrappedWeights <- newTVar weights
+  wrappedNeighbours <- newTVar neighbours
+  initialError <- newTVar 0
+  return $! Node iD initialError wrappedWeights wrappedNeighbours
 
