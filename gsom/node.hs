@@ -1,8 +1,5 @@
-{-# LANGUAGE FlexibleInstances #-}
 -- | This module contains everything concerning the nodes stored in a 
--- lattice which comprises a gsom. This module depends on the language 
--- extension FlexibleInstances to specialize the @'Show'@ and @'Eq'@ 
--- instances for nodes with value type NodeData.
+-- lattice which comprises a gsom. 
 module Gsom.Node where 
 
 import Gsom.Input(Input)
@@ -28,19 +25,6 @@ data Node a = Leaf | Node { value :: a, neighbours :: Nodes a}
 type Nodes a = [Node a]
 type GsomNode = Node NodeData
 type GsomNodes = [GsomNode]
-
-instance Show (Node NodeData) where 
-  show Leaf = "(Leaf)"
-  show node = " " ++
-    "( w = " ++ (show $ nodeWeight $ value node) ++ 
-    ", E = " ++ (show $ nodeError $ value node) ++ " ) "
-
-instance Eq (Node NodeData) where
-  (==) n1 n2 = (nodeId . value) n1 == (nodeId . value) n2
-
-instance Functor Node where 
-  fmap _ Leaf = Leaf 
-  fmap f n    = Node (f $ value n) (map (fmap f) (neighbours n))
 
 -- | @'node' weight neighbours@ creates a node with the specified parameters.
 node :: Int -> Input -> GsomNodes -> GsomNode
