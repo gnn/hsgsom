@@ -1,6 +1,9 @@
 -- | This module contains everything concerning the nodes stored in a 
 -- lattice which comprises a gsom. 
-module Gsom.Node where 
+module Gsom.Node(
+  module Control.Concurrent.STM
+  , Node(..), Nodes
+  , isLeaf, isNode, node, setNeighbours) where 
 
 -- Modules from the standard library.
 import Control.Concurrent.STM
