@@ -4,6 +4,7 @@
 module Gsom.Lattice where 
 
 -- Standard modules
+import Control.Monad(filterM, foldM, (>=>))
 import System.Random(Random, RandomGen, randomRs, split)
 
 -- Private modules
@@ -12,8 +13,10 @@ import Gsom.Node
 
 -- | For now a lattice is just a list of nodes. Every node should be reachable 
 -- from every other node so a lattice might as well be represented by one 
--- single node but this approach 
-type Lattice = GsomNodes
+-- single node but this approach here is chosen as to able to calculate the
+-- current number of nodes simply by doing @'length' lattice@ for a given 
+-- lattice.
+type Lattice = Nodes
 
 -- | @'new' g inputs@ creates a new minimal lattice where weights are randomly
 -- initialized with values between 0 and 1 using the random number generator g
