@@ -38,3 +38,17 @@ node iD weights neighbours = atomically $ do
   initialError <- newTVar 0
   return $! Node iD initialError wrappedWeights neighbours
 
+-- | @'setNeighbours' node nodes@ sets the neighbours of @node@ to @nodes@. 
+setNeighbours :: Node -> [Node] -> IO Node
+setNeighbours n ns = atomically $ do
+  mapM (uncurry writeTVar) (zip (neighbours n) ns)
+  return n
+
+-- | @'isLeaf' node@ returns @'True'@ if the given node is a @'Leaf'@ and 
+-- @'False'@ otherwise.
+isLeaf, isNode :: Node -> Bool
+isLeaf Leaf = True
+isLeaf _    = False
+-- | @'isNode' node@ returns @'False'@ if the given node is a @'Leaf'@ and 
+-- @'True'@ otherwise.
+isNode      = not.isLeaf
