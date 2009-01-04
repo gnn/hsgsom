@@ -52,13 +52,13 @@ bmu i l = atomically $ case l of
           then return v1 else return v2) 
       x xs >>= readTVar
 
--- | @'update' input learning_rate ids node@ traverses the whole map updating 
--- the weights of the nodes which have @'nodeId'@s matching those in ids
--- according to the formula: 
--- * @\weight -> weight + learning_rate'.*'(input '<->' weight)@
--- and returns the new gsom.
-update :: Input -> Double -> [Int] -> GsomNode -> GsomNode
-update i lr ids gsom = fmap (
-  \v -> if nodeId v `elem` ids then adjust v else id v) gsom where 
-  adjust v = v{nodeWeight = nodeWeight v <+> lr .* (i <-> nodeWeight v)}
+-- | @'update' input learning_rate nodes@ updates 
+-- the weights of the nodes in @nodes@ according to the formula
+-- * @\weight -> weight + learning_rate * (input - weight)@
+update :: Input -> Double -> Nodes -> IO ()
+update input lr nodes = mapM_ (\v -> atomically $ do 
+  n <- readTVar v
+  w <- readTVar $ weights n 
+  writeTVar (weights n) (adjust w)
+  ) nodes where adjust w = w <+> lr .* (input <-> w)
 
