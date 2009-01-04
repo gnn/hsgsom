@@ -41,14 +41,16 @@ new g is = do
 
 -- | @'bmu' input lattice@ returns the best matching unit i.e. the node with
 -- minimal distance to the given input vector.
-bmu :: Input -> Lattice -> GsomNode
-bmu i l = let weight = nodeWeight . value in case l of
-  [] -> error "error in bmu: empty lattices shouldn't occur."
-  (x:xs) -> bmu' x xs where
-    bmu' current remaining = case remaining of 
-      [] -> current
-      (x:xs) -> if (distance i $ weight current) <= (distance i $ weight x)
-        then bmu' current xs else bmu' x xs 
+bmu :: Input -> Lattice -> IO Node
+bmu i l = atomically $ case l of
+    [] -> error "error in bmu: empty lattices shouldn't occur."
+    (x:xs) -> 
+      foldM (\v1 v2 -> do
+        i1 <- (readTVar v1 >>= readTVar.weights)
+        i2 <- (readTVar v2 >>= readTVar.weights)
+        if (distance i $ i1) <= (distance i $ i2) 
+          then return v1 else return v2) 
+      x xs >>= readTVar
 
 -- | @'update' input learning_rate ids node@ traverses the whole map updating 
 -- the weights of the nodes which have @'nodeId'@s matching those in ids
