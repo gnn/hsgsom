@@ -21,14 +21,23 @@ type Lattice = Nodes
 -- | @'new' g inputs@ creates a new minimal lattice where weights are randomly
 -- initialized with values between 0 and 1 using the random number generator g
 -- and with the weight vectors having dimension equal to the input dimension.
-new :: RandomGen g => g -> Inputs -> Lattice
-new g is = [a, b, c, d] where 
-  a = node 0 (weights 0) [Leaf, Leaf, b, d]
-  b = node 1 (weights 1) [a, Leaf, Leaf, c]
-  c = node 2 (weights 2) [a, b, Leaf, Leaf]
-  d = node 3 (weights 3) [Leaf, a, c, Leaf]
-  weights n = take (dimension is) $ randomRs (0, 1) (gs g !! n)
-  gs g = let (g1, g2) = split g in g1 : gs g2 
+new :: RandomGen g => g -> Inputs -> IO Lattice
+new g is = do 
+  let gs g = let (g1, g2) = split g in g1 : gs g2
+  let weights = \n -> take (dimension is) $ randomRs (0, 1) (gs g !! n)
+  references <- atomically $ mapM newTVar (replicate 16 Leaf)
+  nodes <- mapM
+    (\n -> node n (weights n) (take 4 $ drop (n*4) references))
+    [0,1,2,3]
+  let 
+    neighbours = map (map (\n -> if n < 0 then Leaf else nodes!!n))
+      ( [-1, -1, 1, 3] 
+      : [0, -1, -1, 2] 
+      : [3, 1, -1, -1] 
+      : [-1, 0, 2, -1] 
+      : [])
+  mapM (uncurry setNeighbours) (zip nodes neighbours)
+  atomically $ filterM (readTVar >=> return . not . isLeaf) references
 
 -- | @'bmu' input lattice@ returns the best matching unit i.e. the node with
 -- minimal distance to the given input vector.
