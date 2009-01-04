@@ -32,8 +32,8 @@ type Nodes = [TVar Node]
 
 -- | @'node' id weights neighbours@ creates a node with the specified 
 -- parameters.
-node :: Int -> Input -> Nodes -> STM Node
-node iD weights neighbours = do
+node :: Int -> Input -> Nodes -> IO Node
+node iD weights neighbours = atomically $ do
   wrappedWeights <- newTVar weights
   initialError <- newTVar 0
   return $! Node iD initialError wrappedWeights neighbours
