@@ -26,16 +26,15 @@ data Node = Leaf |
   , -- | The nodes weight vector. This is the center of the voronoi cell the 
     -- node represents.
   weights :: TVar Input
-  , -- | The list of the nodes neighbours.
-  neighbours :: TVar Nodes}
-type Nodes = [Node]
+  , -- | The list of the node's neighbours.
+  neighbours :: Nodes}
+type Nodes = [TVar Node]
 
 -- | @'node' id weights neighbours@ creates a node with the specified 
 -- parameters.
 node :: Int -> Input -> Nodes -> STM Node
 node iD weights neighbours = do
   wrappedWeights <- newTVar weights
-  wrappedNeighbours <- newTVar neighbours
   initialError <- newTVar 0
-  return $! Node iD initialError wrappedWeights wrappedNeighbours
+  return $! Node iD initialError wrappedWeights neighbours
 
