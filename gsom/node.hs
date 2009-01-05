@@ -1,15 +1,18 @@
 -- | This module contains everything concerning the nodes stored in a 
--- lattice which comprises a gsom. 
+-- lattice which comprises a gsom. All impure functions in here should
+-- be inside the STM monad because nodes are the smallest thing we have 
+-- inside a gsom and transacton granularity should be controlled on a 
+-- higher level.
 module Gsom.Node(
   module Control.Concurrent.STM
   , Node(..), Nodes
-  , isLeaf, isNode, node, setNeighbours) where 
+  , isLeaf, isNode, node, setNeighbours, update) where 
 
 -- Modules from the standard library.
 import Control.Concurrent.STM
 
 -- Modules private to this library.
-import Gsom.Input(Input) 
+import Gsom.Input(Input, (<+>), (<->), (.*)) 
 
 -- | The type of nodes of a gsom.
 data Node =
@@ -34,18 +37,28 @@ type Nodes = [Node]
 
 -- | @'node' id weights neighbours@ creates a node with the specified 
 -- parameters.
-node :: Int -> Input -> Nodes -> IO Node
-node iD weights neighbours = atomically $ do
+node :: Int -> Input -> Nodes -> STM Node
+node iD weights neighbours = do
   wrappedWeights <- newTVar weights
   initialError <- newTVar 0
   wrappedNeighbours <- mapM newTVar neighbours
   return $! Node iD initialError wrappedWeights wrappedNeighbours
 
 -- | @'setNeighbours' node nodes@ sets the neighbours of @node@ to @nodes@. 
-setNeighbours :: Node -> Nodes -> IO Node
-setNeighbours n ns = atomically $ do
+setNeighbours :: Node -> Nodes -> STM Node
+setNeighbours n ns = do
   mapM (uncurry writeTVar) (zip (neighbours n) ns)
   return n
+
+-- | @'update' input learning_rate nodes@ updates 
+-- the weights of the nodes in @nodes@ according to the formula
+--
+-- * @\weight -> weight + learning_rate * (input - weight)@
+update :: Input -> Double -> Nodes -> STM ()
+update input lr nodes = mapM_ (\n -> let w = weights n in 
+  readTVar w >>= writeTVar w . adjust
+  ) $ nodes where 
+    adjust = \w -> w <+> lr .* (input <-> w)
 
 -- | @'isLeaf' node@ returns @'True'@ if the given node is a @'Leaf'@ and 
 -- @'False'@ otherwise.

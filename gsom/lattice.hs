@@ -8,7 +8,7 @@ import Control.Monad(filterM, foldM, (>=>))
 import System.Random(Random, RandomGen, randomRs, split)
 
 -- Private modules
-import Gsom.Input(Input, Inputs, dimension, distance, (<+>), (<->), (.*))
+import Gsom.Input(Input, Inputs, dimension, distance)
 import Gsom.Node
 
 -- | For now a lattice is just a list of nodes. Every node should be reachable 
@@ -22,7 +22,7 @@ type Lattice = Nodes
 -- initialized with values between 0 and 1 using the random number generator g
 -- and with the weight vectors having dimension equal to the input dimension.
 new :: RandomGen g => g -> Inputs -> IO Lattice
-new g is = do 
+new g is = atomically $ do 
   let gs g = let (g1, g2) = split g in g1 : gs g2
   let weights = \n -> take (dimension is) $ randomRs (0, 1) (gs g !! n)
   nodes <- mapM
@@ -51,12 +51,3 @@ bmu i l = atomically $ let ws = readTVar.weights in case l of
           then return n1 else return n2) 
       x xs
 
--- | @'update' input learning_rate nodes@ updates 
--- the weights of the nodes in @nodes@ according to the formula
---
--- * @\weight -> weight + learning_rate * (input - weight)@
-update :: Input -> Double -> Nodes -> IO ()
-update input lr nodes = mapM_ (\n -> let w = weights n in atomically $ 
-  readTVar w >>= writeTVar w . adjust) 
-  nodes where 
-    adjust = \w -> w <+> lr .* (input <-> w)
