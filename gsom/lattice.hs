@@ -1,5 +1,5 @@
 -- | This module contains everything concerning the lattice which is build
--- buy gsom.
+-- by gsom.
 
 module Gsom.Lattice where 
 
@@ -13,7 +13,7 @@ import Gsom.Node
 
 -- | For now a lattice is just a list of nodes. Every node should be reachable 
 -- from every other node so a lattice might as well be represented by one 
--- single node but this approach here is chosen as to able to calculate the
+-- single node but this approach here is chosen as to be able to calculate the
 -- current number of nodes simply by doing @'length' lattice@ for a given 
 -- lattice.
 type Lattice = Nodes
@@ -53,6 +53,7 @@ bmu i l = atomically $ let ws = readTVar.weights in case l of
 
 -- | @'update' input learning_rate nodes@ updates 
 -- the weights of the nodes in @nodes@ according to the formula
+--
 -- * @\weight -> weight + learning_rate * (input - weight)@
 update :: Input -> Double -> Nodes -> IO ()
 update input lr nodes = mapM_ (\n -> let w = weights n in atomically $ 

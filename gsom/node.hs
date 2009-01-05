@@ -11,10 +11,12 @@ import Control.Concurrent.STM
 -- Modules private to this library.
 import Gsom.Input(Input) 
 
--- | The nodes of a gsom are either Leafs, signalling neighbours of boundary 
--- nodes or they are actual nodes with a few associated values and a list of 
--- neighbouring nodes.
-data Node = Leaf | 
+-- | The type of nodes of a gsom.
+data Node =
+  -- | They're either Leafs, signalling neighbours of boundary nodes 
+  Leaf |
+  -- |  or they are actual nodes with a few associated values and a list of 
+  -- neighbouring nodes.
   Node { 
   -- | Used to uniquely identify nodes. For new nodes this should be set to
   -- the current size of the gsom+1 to ensure that @'iD'@ is unique. 
@@ -23,7 +25,7 @@ data Node = Leaf |
   iD :: Int
   , -- | The quantization error the node has accumulated so far.
   quantizationError :: TVar Double
-  , -- | The nodes weight vector. This is the center of the voronoi cell the 
+  , -- | The node's weight vector. This is the center of the voronoi cell the 
     -- node represents.
   weights :: TVar Input
   , -- | The list of the node's neighbours.
