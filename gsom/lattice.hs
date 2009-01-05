@@ -25,9 +25,8 @@ new :: RandomGen g => g -> Inputs -> IO Lattice
 new g is = do 
   let gs g = let (g1, g2) = split g in g1 : gs g2
   let weights = \n -> take (dimension is) $ randomRs (0, 1) (gs g !! n)
-  references <- atomically $ mapM newTVar (replicate 16 Leaf)
   nodes <- mapM
-    (\n -> node n (weights n) (take 4 $ drop (n*4) references))
+    (\n -> node n (weights n) (replicate 4 Leaf))
     [0,1,2,3]
   let 
     neighbours = map (map (\n -> if n < 0 then Leaf else nodes!!n))
@@ -37,28 +36,26 @@ new g is = do
       : [-1, 0, 2, -1] 
       : [])
   mapM (uncurry setNeighbours) (zip nodes neighbours)
-  atomically $ filterM (readTVar >=> return . not . isLeaf) references
+  return nodes
 
 -- | @'bmu' input lattice@ returns the best matching unit i.e. the node with
 -- minimal distance to the given input vector.
 bmu :: Input -> Lattice -> IO Node
-bmu i l = atomically $ case l of
+bmu i l = atomically $ let ws = readTVar.weights in case l of
     [] -> error "error in bmu: empty lattices shouldn't occur."
     (x:xs) -> 
-      foldM (\v1 v2 -> do
-        i1 <- (readTVar v1 >>= readTVar.weights)
-        i2 <- (readTVar v2 >>= readTVar.weights)
-        if (distance i $ i1) <= (distance i $ i2) 
-          then return v1 else return v2) 
-      x xs >>= readTVar
+      foldM (\n1 n2 -> do
+        w1 <- readTVar $ weights n1
+        w2 <- readTVar $ weights n2
+        if (distance i w1) <= (distance i w2) 
+          then return n1 else return n2) 
+      x xs
 
 -- | @'update' input learning_rate nodes@ updates 
 -- the weights of the nodes in @nodes@ according to the formula
 -- * @\weight -> weight + learning_rate * (input - weight)@
 update :: Input -> Double -> Nodes -> IO ()
-update input lr nodes = mapM_ (\v -> atomically $ do 
-  n <- readTVar v
-  w <- readTVar $ weights n 
-  writeTVar (weights n) (adjust w)
-  ) nodes where adjust w = w <+> lr .* (input <-> w)
-
+update input lr nodes = mapM_ (\n -> let w = weights n in atomically $ 
+  readTVar w >>= writeTVar w . adjust) 
+  nodes where 
+    adjust = \w -> w <+> lr .* (input <-> w)

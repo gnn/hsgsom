@@ -27,8 +27,8 @@ data Node = Leaf |
     -- node represents.
   weights :: TVar Input
   , -- | The list of the node's neighbours.
-  neighbours :: Nodes}
-type Nodes = [TVar Node]
+  neighbours :: [TVar Node]}
+type Nodes = [Node]
 
 -- | @'node' id weights neighbours@ creates a node with the specified 
 -- parameters.
@@ -36,10 +36,11 @@ node :: Int -> Input -> Nodes -> IO Node
 node iD weights neighbours = atomically $ do
   wrappedWeights <- newTVar weights
   initialError <- newTVar 0
-  return $! Node iD initialError wrappedWeights neighbours
+  wrappedNeighbours <- mapM newTVar neighbours
+  return $! Node iD initialError wrappedWeights wrappedNeighbours
 
 -- | @'setNeighbours' node nodes@ sets the neighbours of @node@ to @nodes@. 
-setNeighbours :: Node -> [Node] -> IO Node
+setNeighbours :: Node -> Nodes -> IO Node
 setNeighbours n ns = atomically $ do
   mapM (uncurry writeTVar) (zip (neighbours n) ns)
   return n
