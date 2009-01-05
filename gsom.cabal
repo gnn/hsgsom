@@ -13,8 +13,8 @@ Description:
   See <http://en.wikipedia.org/wiki/GSOM> for an explanation of the algorithm.
 
 Library
-  Build-Depends:    base, random
-  Exposed-Modules:  Gsom
-  Other-Modules:    Gsom.Lattice, Gsom.Input
+  Build-Depends:    base, random, stm
+  Exposed-Modules:  Gsom, Gsom.Input, Gsom.Lattice, Gsom.Node
+--  Other-Modules:    Gsom.Lattice, Gsom.Input
   Extensions:       ExistentialQuantification
 
