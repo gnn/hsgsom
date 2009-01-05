@@ -1,29 +1,12 @@
 general:
-  - use STM and maybe the info on:
+  - remember to check out
   http://cdsmith.wordpress.com/2007/05/27/snapshotting-a-neat-problem-and-solution-in-haskell/
-    to express the whole alghorithm.
+    could be helpfull
 
-gsom.hs:
-  - Find a way to to express the gsom algorithm. 
-    The best way is probably not to use so many 
-    datatypes and just treat gsom as a function getting input and producing 
-    a grid which quantizes the input. 
-    State which has to be maintained could be saved as parameters fixed by 
-    currying. This includes the current grid, the spread factor, the current
-    learning rate and so forth...
 tests.hs:
   - add test to check whether normlize acs as id on inputs which are already 
     between 0 and 1 and which have active bounds 
     (NOTE: this is different from normlize/idempotent)
     
   -add tests for distance and bmu 
-
-node.hs/lattice.hs:
-  - I'm not happy with the whole Node/Nodes/GsomNode/GsomNodes thing. 
-    To me it looks like there should be two different modules for generic
-    parameterized nodes and one for a specialization to nodes containing
-    NodeData. 
-
-lattice.hs:
-  - find a better way to express update and where to move it.
 
