@@ -6,7 +6,7 @@
 
 module Gsom.Node(
     module Control.Concurrent.STM
---  , module Control.Monad
+  , module Control.Monad
   , Node(..), Nodes
   , isLeaf, isNode, node, setNeighbours, update) where 
 
@@ -16,7 +16,7 @@ module Gsom.Node(
 ------------------------------------------------------------------------------
 
 import Control.Concurrent.STM
-import Control.Monad(filterM, liftM)
+import Control.Monad(liftM, mapM)
 import Data.List(nub)
 
 ------------------------------------------------------------------------------
