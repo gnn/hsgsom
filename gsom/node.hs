@@ -4,12 +4,15 @@
 -- inside a gsom and transacton granularity should be controlled on a 
 -- higher level.
 module Gsom.Node(
-  module Control.Concurrent.STM
+    module Control.Concurrent.STM
+--  , module Control.Monad
   , Node(..), Nodes
   , isLeaf, isNode, node, setNeighbours, update) where 
 
 -- Modules from the standard library.
 import Control.Concurrent.STM
+import Control.Monad(filterM, liftM)
+import Data.List(nub)
 
 -- Modules private to this library.
 import Gsom.Input(Input, (<+>), (<->), (.*)) 
@@ -34,6 +37,11 @@ data Node =
   , -- | The list of the node's neighbours.
   neighbours :: [TVar Node]}
 type Nodes = [Node]
+
+instance Eq Node where
+  Leaf == Leaf = True 
+  Node{iD = id1} == Node{iD = id2} = id1 == id2
+  _ == _ = False
 
 -- | @'node' id weights neighbours@ creates a node with the specified 
 -- parameters.
@@ -68,3 +76,20 @@ isLeaf _    = False
 -- | @'isNode' node@ returns @'False'@ if the given node is a @'Leaf'@ and 
 -- @'True'@ otherwise.
 isNode      = not.isLeaf
+
+-- | Calculates the neighbourhood of the given size of the given node.
+-- It's not very efficient so you shouldn't try big neihbourhood sizes.
+neighbourhood :: Node -> Int -> STM Nodes
+neighbourhood Leaf _ = 
+  error "in neighbhourhood: neighbourhood shouldn't be called on leaves."
+neighbourhood node size = liftM nub $ iterate ( 
+  \wrappedNodes -> do
+    ns <- wrappedNodes
+    newNeighbours <- mapM readTVar . concatMap neighbours $ ns 
+    return $ ns ++ filter (not.isLeaf) ns) 
+  (return [node]) !! size
+
+{-
+  let purge l = \n -> filter (not (isLeaf n || iD n `elem` l))
+  head.(drop size). (mapM readTVar) (neighbours node)
+-}
