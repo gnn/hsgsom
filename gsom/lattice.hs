@@ -3,13 +3,23 @@
 
 module Gsom.Lattice where 
 
+------------------------------------------------------------------------------
 -- Standard modules
+------------------------------------------------------------------------------
+
 import Control.Monad(filterM, foldM, (>=>))
 import System.Random(Random, RandomGen, randomRs, split)
 
+------------------------------------------------------------------------------
 -- Private modules
+------------------------------------------------------------------------------
+
 import Gsom.Input(Input, Inputs, dimension, distance)
 import Gsom.Node
+
+------------------------------------------------------------------------------
+-- The Lattice
+------------------------------------------------------------------------------
 
 -- | For now a lattice is just a list of nodes. Every node should be reachable 
 -- from every other node so a lattice might as well be represented by one 
@@ -17,6 +27,10 @@ import Gsom.Node
 -- current number of nodes simply by doing @'length' lattice@ for a given 
 -- lattice.
 type Lattice = Nodes
+
+------------------------------------------------------------------------------
+-- Creation
+------------------------------------------------------------------------------
 
 -- | @'new' g inputs@ creates a new minimal lattice where weights are randomly
 -- initialized with values between 0 and 1 using the random number generator g
@@ -38,6 +52,10 @@ new g is = atomically $ do
   mapM_ (uncurry setNeighbours) (zip nodes neighbours)
   return nodes
 
+------------------------------------------------------------------------------
+-- Functions working on the lattice
+------------------------------------------------------------------------------
+
 -- | @'bmu' input lattice@ returns the best matching unit i.e. the node with
 -- minimal distance to the given input vector.
 bmu :: Input -> Lattice -> IO Node
@@ -50,4 +68,5 @@ bmu i l = atomically $ let ws = readTVar.weights in case l of
         if distance i w1 <= distance i w2 
           then return n1 else return n2) 
       x xs
+
 

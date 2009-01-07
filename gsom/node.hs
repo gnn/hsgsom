@@ -3,19 +3,31 @@
 -- be inside the STM monad because nodes are the smallest thing we have 
 -- inside a gsom and transacton granularity should be controlled on a 
 -- higher level.
+
 module Gsom.Node(
     module Control.Concurrent.STM
 --  , module Control.Monad
   , Node(..), Nodes
   , isLeaf, isNode, node, setNeighbours, update) where 
 
--- Modules from the standard library.
+
+------------------------------------------------------------------------------
+-- Standard modules
+------------------------------------------------------------------------------
+
 import Control.Concurrent.STM
 import Control.Monad(filterM, liftM)
 import Data.List(nub)
 
--- Modules private to this library.
+------------------------------------------------------------------------------
+-- Private modules
+------------------------------------------------------------------------------
+
 import Gsom.Input(Input, (<+>), (<->), (.*)) 
+
+------------------------------------------------------------------------------
+-- The node type
+------------------------------------------------------------------------------
 
 -- | The type of nodes of a gsom.
 data Node =
@@ -43,6 +55,10 @@ instance Eq Node where
   Node{iD = id1} == Node{iD = id2} = id1 == id2
   _ == _ = False
 
+------------------------------------------------------------------------------
+-- Creation
+------------------------------------------------------------------------------
+
 -- | @'node' id weights neighbours@ creates a node with the specified 
 -- parameters.
 node :: Int -> Input -> Nodes -> STM Node
@@ -51,6 +67,10 @@ node iD weights neighbours = do
   initialError <- newTVar 0
   wrappedNeighbours <- mapM newTVar neighbours
   return $! Node iD initialError wrappedWeights wrappedNeighbours
+
+------------------------------------------------------------------------------
+-- Modifying nodes
+------------------------------------------------------------------------------
 
 -- | @'setNeighbours' node nodes@ sets the neighbours of @node@ to @nodes@. 
 setNeighbours :: Node -> Nodes -> STM Node
@@ -67,6 +87,10 @@ update input lr nodes = mapM_ (\n -> let w = weights n in
   readTVar w >>= writeTVar w . adjust
   ) $ nodes where 
     adjust w = w <+> lr .* (input <-> w)
+
+------------------------------------------------------------------------------
+-- Querying node properties and such
+------------------------------------------------------------------------------
 
 -- | @'isLeaf' node@ returns @'True'@ if the given node is a @'Leaf'@ and 
 -- @'False'@ otherwise.
@@ -89,7 +113,3 @@ neighbourhood node size = liftM nub $ iterate (
     return $ ns ++ filter (not.isLeaf) ns) 
   (return [node]) !! size
 
-{-
-  let purge l = \n -> filter (not (isLeaf n || iD n `elem` l))
-  head.(drop size). (mapM readTVar) (neighbours node)
--}
