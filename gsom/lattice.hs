@@ -24,7 +24,7 @@ type Lattice = Nodes
 new :: RandomGen g => g -> Inputs -> IO Lattice
 new g is = atomically $ do 
   let gs g = let (g1, g2) = split g in g1 : gs g2
-  let weights = \n -> take (dimension is) $ randomRs (0, 1) (gs g !! n)
+  let weights n = take (dimension is) $ randomRs (0, 1) (gs g !! n)
   nodes <- mapM
     (\n -> node n (weights n) (replicate 4 Leaf))
     [0,1,2,3]
@@ -35,7 +35,7 @@ new g is = atomically $ do
       : [3, 1, -1, -1] 
       : [-1, 0, 2, -1] 
       : [])
-  mapM (uncurry setNeighbours) (zip nodes neighbours)
+  mapM_ (uncurry setNeighbours) (zip nodes neighbours)
   return nodes
 
 -- | @'bmu' input lattice@ returns the best matching unit i.e. the node with
@@ -47,7 +47,7 @@ bmu i l = atomically $ let ws = readTVar.weights in case l of
       foldM (\n1 n2 -> do
         w1 <- readTVar $ weights n1
         w2 <- readTVar $ weights n2
-        if (distance i w1) <= (distance i w2) 
+        if distance i w1 <= distance i w2 
           then return n1 else return n2) 
       x xs
 

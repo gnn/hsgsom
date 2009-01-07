@@ -47,7 +47,7 @@ node iD weights neighbours = do
 -- | @'setNeighbours' node nodes@ sets the neighbours of @node@ to @nodes@. 
 setNeighbours :: Node -> Nodes -> STM Node
 setNeighbours n ns = do
-  mapM (uncurry writeTVar) (zip (neighbours n) ns)
+  mapM_ (uncurry writeTVar) (zip (neighbours n) ns)
   return n
 
 -- | @'update' input learning_rate nodes@ updates 
@@ -58,7 +58,7 @@ update :: Input -> Double -> Nodes -> STM ()
 update input lr nodes = mapM_ (\n -> let w = weights n in 
   readTVar w >>= writeTVar w . adjust
   ) $ nodes where 
-    adjust = \w -> w <+> lr .* (input <-> w)
+    adjust w = w <+> lr .* (input <-> w)
 
 -- | @'isLeaf' node@ returns @'True'@ if the given node is a @'Leaf'@ and 
 -- @'False'@ otherwise.

@@ -10,7 +10,7 @@ type Inputs = [Input]
 
 -- | Normalizing input vectors means scaling each component to be in [0,1].
 normalize :: Inputs -> Inputs
-normalize is = map (map scale) $ map (zip3 mins maxs) is where
+normalize is = map (map scale . zip3 mins maxs) is where
   scale (min', max', n) = if min' == max' then 0 else (n - min')/(max' - min')
   mins = map minimum is'
   maxs = map maximum is'
