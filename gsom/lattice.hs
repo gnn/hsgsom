@@ -18,15 +18,19 @@ import Gsom.Input(Input, Inputs, dimension, distance)
 import Gsom.Node
 
 ------------------------------------------------------------------------------
--- The Lattice
+-- The Lattice type
 ------------------------------------------------------------------------------
 
--- | For now a lattice is just a list of nodes. Every node should be reachable 
--- from every other node so a lattice might as well be represented by one 
--- single node but this approach here is chosen as to be able to calculate the
--- current number of nodes simply by doing @'length' lattice@ for a given 
--- lattice.
-type Lattice = Nodes
+-- | The lattice type. It has two fields:
+data Lattice = Lattice {
+  -- | The number of current nodes. Is tracked in a TVar for efficiency 
+  -- reasons and so that unique node ids can be created thread safe.
+  count :: TVar Int
+, -- | The list of nodes. it is also tracked in a TVar so that new nodes can 
+  -- be inserted in a thread safe manner. 
+  -- In addidion every node should be reachable from every other node. 
+  nodes :: TVar Nodes
+}
 
 ------------------------------------------------------------------------------
 -- Creation
@@ -50,7 +54,9 @@ new g is = atomically $ do
       : [-1, 0, 2, -1] 
       : [])
   mapM_ (uncurry setNeighbours) (zip nodes neighbours)
-  return nodes
+  count' <- newTVar 4
+  nodes' <- newTVar nodes
+  return $ Lattice count' nodes'
 
 ------------------------------------------------------------------------------
 -- Functions working on the lattice
@@ -59,7 +65,8 @@ new g is = atomically $ do
 -- | @'bmu' input lattice@ returns the best matching unit i.e. the node with
 -- minimal distance to the given input vector.
 bmu :: Input -> Lattice -> IO Node
-bmu i l = let ws = readTVar.weights in case l of
+bmu i l = atomically (readTVar $ nodes l) >>= (\l' -> 
+  let ws = readTVar.weights in case l' of
     [] -> error "error in bmu: empty lattices shouldn't occur."
     (x:xs) -> 
       foldM (\n1 n2 -> atomically $ do
@@ -68,5 +75,4 @@ bmu i l = let ws = readTVar.weights in case l of
         if distance i w1 <= distance i w2 
           then return n1 else return n2) 
       x xs
-
-
+  )
