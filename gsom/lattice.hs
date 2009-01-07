@@ -59,10 +59,10 @@ new g is = atomically $ do
 -- | @'bmu' input lattice@ returns the best matching unit i.e. the node with
 -- minimal distance to the given input vector.
 bmu :: Input -> Lattice -> IO Node
-bmu i l = atomically $ let ws = readTVar.weights in case l of
+bmu i l = let ws = readTVar.weights in case l of
     [] -> error "error in bmu: empty lattices shouldn't occur."
     (x:xs) -> 
-      foldM (\n1 n2 -> do
+      foldM (\n1 n2 -> atomically $ do
         w1 <- readTVar $ weights n1
         w2 <- readTVar $ weights n2
         if distance i w1 <= distance i w2 
