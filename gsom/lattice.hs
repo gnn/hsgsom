@@ -59,7 +59,7 @@ new g is = atomically $ do
   return $ Lattice count' nodes'
 
 ------------------------------------------------------------------------------
--- Functions working on the lattice
+-- Reading
 ------------------------------------------------------------------------------
 
 -- | @'bmu' input lattice@ returns the best matching unit i.e. the node with
@@ -76,3 +76,8 @@ bmu i l = atomically (readTVar $ nodes l) >>= (\l' ->
           then return n1 else return n2) 
       x xs
   )
+
+------------------------------------------------------------------------------
+-- Manipulating
+------------------------------------------------------------------------------
+
