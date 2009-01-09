@@ -9,7 +9,7 @@ import Prelude hiding (Either(..))
 import Test.QuickCheck
 
 -- Modules which are only imported so that functions of them can be tested.
-import Gsom.Input(normalize)
+import Gsom.Input(bounds, normalize, unnormalize, (<->))
 
 data Alignment = Left | Right
 
@@ -41,6 +41,7 @@ tests :: [(String, IO ())]
 tests = formatLabels 
   $ ("normalize/idempotent", test prop_normalize_idempotent)
   : ("normalize/bounds", test prop_normalize_bounds)
+  : ("unnormalize.normalize/id", test prop_unnormalize_normalize_id)
   : []
 
 -- Normalize should be idempotent.
@@ -49,3 +50,11 @@ prop_normalize_idempotent s = (normalize.normalize) s == normalize s
 -- The result of normalize should contain only values between 0 and 1.
 prop_normalize_bounds s = and.(map and).(map $ map test) $ (normalize s) where
  test = (\x -> (x>=0 && x<=1))
+
+-- First normalizing and then unnormalizing a list should give the list back,
+-- but we have to accomodate for floating point precision errors.
+-- This test is horrible so I should try to reformulate it somehow.
+prop_unnormalize_normalize_id s = 
+  (foldl max 0 $ map (foldl (max.abs) 0) $
+    zipWith (<->) ((flip unnormalize bnds . normalize) s) s) < 1*10**(-13) 
+      where bnds = bounds s

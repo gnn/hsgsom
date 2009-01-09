@@ -1,12 +1,16 @@
 -- |This module contains everything concerning the input to gsom.
 
-module Gsom.Input where 
+module Gsom.Input(
+  Input, Inputs
+, bounds, dimension, normalize, unnormalize
+, distance, (*.), (.*), (<+>), (<->)
+) where 
 
 ------------------------------------------------------------------------------
 -- Standard modules
 ------------------------------------------------------------------------------
 
-import Data.List(transpose)
+import Data.List(foldl1', transpose)
 
 ------------------------------------------------------------------------------
 -- Utility functions on lists of inputvectors
@@ -16,13 +20,35 @@ import Data.List(transpose)
 type Input = [Double]
 type Inputs = [Input]
 
--- | Normalizing input vectors means scaling each component to be in [0,1].
+-- | Normalizes input vectors.
+-- @'normalize' inputs@ takes the given list of input vectors @inputs@ and 
+-- returns a list of input vectors where each component is in @[0,1]@.
+-- If you want to unnormalize the input vectors use @'bounds'@ and 
+-- @'unnormalize'@.
 normalize :: Inputs -> Inputs
 normalize is = map (map scale . zip3 mins maxs) is where
   scale (min', max', n) = if min' == max' then 0 else (n - min')/(max' - min')
   mins = map minimum is'
   maxs = map maximum is'
   is' = transpose is
+
+-- | Calculates the bounds of the input vector components.
+-- @'bounds' inputs@ returns a list of pairs where having the pair @(min, max)@
+-- at index i means that the @min@ is the minimum over the components at index 
+-- i of the input vectors in @inputs@ while @max@ is the respective maximum.
+-- It's horrible but should go through the input list in one pass.
+bounds :: Inputs -> [(Double, Double)]
+bounds is = foldl1' (mapUncurry2 min max) is' where
+  dupZip xs = zip xs xs
+  is' = map dupZip is
+  mapUncurry2 f g = \xs ys -> (map $ ap f g) (padZip xs ys)
+  ap f g ((a,b),(c,d)) = (f a c, g b d)
+
+-- | Unnormalizes the given input vectors @inputs@ assuming that it's bounds
+-- prviously where @bounds@.
+unnormalize :: Inputs -> [(Double, Double)] -> Inputs
+unnormalize is bnds = map (map f . zip bnds) is where   
+  f ((min',max'), n) = if min' == max' then min' else n*(max'-min')+min'
 
 -- | Calculating the dimension of a given set of inputs just means finding 
 -- the length of the longest input vector.
@@ -60,3 +86,18 @@ infixl 6 <->, <+>
     -1  -> front ++ drop l1 i2
     1   -> front ++ drop l2 i1
 (<->) i1 i2 = i1 <+> (-1) .* i2
+
+------------------------------------------------------------------------------
+-- Processing functions. Not exported.
+------------------------------------------------------------------------------
+
+-- | Zips two lists, but instead of truncating the longer one to the length
+-- of the shortert one the shorter one is padded with elements from the 
+-- suffix of the longer one which is exceeding the length of the shorter one.
+padZip :: [a] -> [a] -> [(a, a)]
+padZip xs ys = 
+  let (lx, ly) = (length xs, length ys) in uncurry zip $ case compare lx ly of
+    EQ -> (xs,ys)
+    GT -> (xs, ys ++ drop ly xs)
+    LT -> (xs ++ drop lx ys, ys)
+
