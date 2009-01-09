@@ -27,7 +27,7 @@ format table alignment separator = map (zipWith pad lengths) table where
 
 -- | @'formatLabels' labeled_list@ formats the labels in the given list
 -- so that the label column is big enough for every label, the labels are
--- left aligned and there is a colob before each test result.
+-- left aligned and there is a colon before each test result.
 formatLabels :: [(String, a)] -> [(String, a)]
 formatLabels ps = zip formatted (map snd ps) where 
   formatted = map head $ format table Left ": "
