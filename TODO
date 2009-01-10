@@ -3,13 +3,35 @@ general:
   http://cdsmith.wordpress.com/2007/05/27/snapshotting-a-neat-problem-and-solution-in-haskell/
     could be helpfull
 
+node.hs;
   - try to express the type Node rather as type Maybe Node because otherwise
     I'm just constantly reinventing the Maybe wheel with Leaf as Nothing.
+    On the other hand the better way would probably be to change the neighbour 
+    representation to an association list having an (Int, TVar Node) pair as 
+    entries where each pair (i, n) means that n is the neigbour in direction 
+    i and where a missing entry for an index i means that there is no 
+    neighbour in direction i. This may get rid of Leafs alltogether.
+
+  - Change the interface of Gsom.Node. Restrict creation of nodes so that 
+    every newly created node is wrapped in a TVar.
+
+  - Add a new type synonym Neighbourlist to the module Gsom.Node. For now
+    it should be [TVar Node] but may be changed for the refactoring mentioned
+    above.
+
+lattice.hs:
+  - Fix the bug in Gsom.Lattice.new.
 
 tests.hs:
-  - add test to check whether normlize acs as id on inputs which are already 
+  - add test to check whether normlize acts as id on inputs which are already 
     between 0 and 1 and which have active bounds 
     (NOTE: this is different from normlize/idempotent)
     
-  -add tests for distance and bmu 
+  - add tests for distance and bmu 
+
+  - add a test case to catch the bug in Gsom.Lattice.new. The bug was, that
+    all new nodes where initialized with their own TVars but they should've
+    been initialized with neihgbouring TVars shared.
+
+  - refactor the clunky normalize_unnormalize_id test.
 
