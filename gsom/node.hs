@@ -47,8 +47,10 @@ data Node =
     -- node represents.
   weights :: TVar Input
   , -- | The list of the node's neighbours.
-  neighbours :: [TVar Node]}
+  neighbours :: Neighbours}
 type Nodes = [Node]
+
+type Neighbours = [TVar Node]
 
 instance Eq Node where
   Leaf == Leaf = True 
@@ -61,7 +63,7 @@ instance Eq Node where
 
 -- | @'node' id weights neighbours@ creates a node with the specified 
 -- parameters.
-node :: Int -> Input -> Nodes -> STM Node
+node :: Int -> Input -> Neigbours -> STM Node
 node iD weights neighbours = do
   wrappedWeights <- newTVar weights
   initialError <- newTVar 0

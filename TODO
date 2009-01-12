@@ -15,10 +15,6 @@ node.hs;
   - Change the interface of Gsom.Node. Restrict creation of nodes so that 
     every newly created node is wrapped in a TVar.
 
-  - Add a new type synonym Neighbourlist to the module Gsom.Node. For now
-    it should be [TVar Node] but may be changed for the refactoring mentioned
-    above.
-
 lattice.hs:
   - Fix the bug in Gsom.Lattice.new.
 
