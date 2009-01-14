@@ -88,8 +88,8 @@ setNeighbours n ns = do
 -- * @\weight -> weight + learning_rate * (input - weight)@
 update :: Input -> Double -> Nodes -> STM ()
 update input lr nodes = mapM_ (\n -> let w = weights n in 
-  readTVar w >>= writeTVar w . adjust
-  ) $ nodes where 
+  readTVar w >>= writeTVar w . adjust) 
+  nodes where 
     adjust w = w <+> lr .* (input <-> w)
  
 -- | Used by @'spawn'@ and @'Gsom.Lattice.new'@ to spawn only a particular 
