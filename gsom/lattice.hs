@@ -40,7 +40,9 @@ data Lattice = Lattice {
 -- initialized with values between 0 and 1 using the random number generator g
 -- and with the weight vectors having dimension equal to the input dimension.
 new :: RandomGen g => g -> Inputs -> IO Lattice
-new g is = atomically $ do 
+new = undefined
+{-
+new g is = atomically $ do
   let gs g = let (g1, g2) = split g in g1 : gs g2
   let weights n = take (dimension is) $ randomRs (0, 1) (gs g !! n)
   nodes <- mapM
@@ -57,6 +59,7 @@ new g is = atomically $ do
   count' <- newTVar 4
   nodes' <- newTVar nodes
   return $ Lattice count' nodes'
+-}
 
 ------------------------------------------------------------------------------
 -- Reading
