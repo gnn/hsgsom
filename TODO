@@ -2,6 +2,8 @@ IMPORTANT:
   - Fix Gsom.Lattice.new.
   - Fix Gsom.Node.spawnDirected to spawn with correct node id.
   - Add calculation of weight vector to Gsom.Node.spawnDirected.
+  - Track down uses of setNeighbours. I'm a little suspicious that this 
+    function introduces some bugs.
 
 general:
   - remember to check out
