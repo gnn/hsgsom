@@ -8,7 +8,8 @@ module Gsom.Node(
     module Control.Concurrent.STM
   , module Control.Monad
   , Node(..), Nodes
-  , isLeaf, isNode, node, setNeighbours, update) where 
+  , isLeaf, isNode, node, propagate, setNeighbours, spawn, unwrappedNeighbours 
+  , update) where 
 
 
 ------------------------------------------------------------------------------
@@ -16,8 +17,9 @@ module Gsom.Node(
 ------------------------------------------------------------------------------
 
 import Control.Concurrent.STM
-import Control.Monad(liftM, mapM)
-import Data.List(nub)
+import Control.Monad(liftM, liftM2, mapM, unless)
+import Data.List(findIndex, findIndices, nub, sortBy)
+import Data.Maybe(fromJust)
 
 ------------------------------------------------------------------------------
 -- Private modules
@@ -89,6 +91,52 @@ update input lr nodes = mapM_ (\n -> let w = weights n in
   readTVar w >>= writeTVar w . adjust
   ) $ nodes where 
     adjust w = w <+> lr .* (input <-> w)
+ 
+-- | Used by @'spawn'@ and @'Gsom.Lattice.new'@ to spawn only a particular 
+-- node. Returns the spawned node.
+-- @'spawn' parent id direction@ will create a new node as a 
+-- neighbour of @parent@ at index @direction@, making @parent@ the neighbour 
+-- of the new node at index @invert direction@ with the new node having an 
+-- @'iD'@ of @id@.
+spawn :: Int -> Node -> Int -> STM Node
+spawn id parent direction = do
+  -- find an existing sibling. He is just used to get the TVar the parent is 
+  -- stored in, so we can put this TVar in the neighbour list. 
+  uWs <- unwrappedNeighbours parent
+  let siblingIndex = fromJust $ findIndex isNode uWs
+  sibling <- readTVar (neighbours parent !! siblingIndex)
+  let back = (invert direction, neighbours sibling !! invert siblingIndex)
+  -- generate the new forward neighbour. It should NEVER exist prior to 
+  -- spawning a node.
+  forward <- liftM2 (,) (return direction) (newTVar Leaf)
+  -- fetch the left and right neighbours or create new leaves if they don't 
+  -- exist.
+  leftright <- mapM get [left, right]
+  let 
+    ns = map snd $ sortBy
+      (\p1 p2 -> compare (fst p1) (fst p2)) (forward : back : leftright)
+  result <- node id [] ns
+  writeTVar (neighbours parent !! direction) result
+  newWeight result direction
+  return result
+    where 
+      -- the get function takes a direction and returns the neighbour in that 
+      -- direction if it exists or a new TVar Leaf otherwise
+      get f = let newDirection = f direction in do 
+        sibling <- readTVar (neighbours parent !! newDirection)
+        liftM2 (,) (return newDirection) $ if isLeaf sibling
+          then newTVar Leaf
+          else return (neighbours sibling !! direction)
+
+-- | @'propagate' node@ propagates the accumulated error of the given @node@ 
+-- to it's neighbours.
+propagate :: Node -> STM()
+propagate node = do
+  let factor = 1 + length (neighbours node)
+  nodes <- liftM (node :) (unwrappedNeighbours node)
+  errorSum <- liftM sum (mapM (readTVar.quantizationError) nodes)
+  let newError = errorSum / fromIntegral (length nodes)
+  mapM_ (flip writeTVar newError . quantizationError) nodes
 
 ------------------------------------------------------------------------------
 -- Querying node properties and such
@@ -114,4 +162,88 @@ neighbourhood node size = liftM nub $ iterate (
     newNeighbours <- mapM readTVar . concatMap neighbours $ ns 
     return $ ns ++ filter (not.isLeaf) ns) 
   (return [node]) !! size
+
+-- | @'unwrappedNeighbours' node@ returns the list of neighbours of the 
+-- given @node@.
+-- Note that neighbours is unwrapped, i.e. the returned list hast type 
+-- @'Nodes'@ not @TVar 'Nodes'@.
+unwrappedNeighbours :: Node -> STM Nodes
+unwrappedNeighbours = mapM readTVar . neighbours
+
+------------------------------------------------------------------------------
+-- Utility functions. Not exportet.
+------------------------------------------------------------------------------
+
+-- | Inverts a direction, i.e. given an index @i@ representing a direction,
+-- it calculates the index representing the backwards direction.
+-- The rectangular lattice structure is hardcoded as the number 4. For 
+-- generalt structures with n neighbours we should have the formula:
+--
+-- * invert i = (i+n/2) `mod` n
+invert, left, right :: Int -> Int
+invert i = (i+2) `mod` 4
+
+-- | @'left' direction@ returns the index which points to the left of 
+-- @direction@.
+left i = (i+1) `mod` 4
+
+-- | @'left' direction@ returns the index which points to the left of 
+-- @direction@.
+right i = (i-1) `mod` 4
+
+-- | This should probably belong into input.hs. 
+checkBounds :: Input -> Input
+checkBounds i = let (min',max') = (minimum i, maximum i) in
+  if min' < 0 || max' > 1 
+  then replicate (length i) 0.5 
+  else i
+
+-- | When a new node is spawned we need to calculate it's new weight vector
+-- This is either done with with (w1+w2)/2 if the node is between two nodes
+-- or 2*w1-w2 where w1 is the weight the parent which spawned the node 
+-- and w2 is the weight of one of the parents neighbours.
+-- For this we need the spawned node as an argument as well as the 
+-- direction in which it was spawned so we can 
+-- calculate and write it's new weight vector:
+-- @'newWeight' node parent direction@
+newWeight :: Node -> Int -> STM ()
+newWeight node direction = let 
+  weight = weights node 
+  write w = writeTVar weight (checkBounds w) 
+  in do
+  -- if the node already has a weight vector don't do anything.
+  -- Update should be called in this case.
+  uW <- readTVar weight
+  unless (null uW) (error 
+    "in newWeight: node already has a weight vector. Update should be called.")
+  -- get the new nodes neighbours
+  unNs <- unwrappedNeighbours node
+  -- check whether the new node is in between two nodes
+  let l = unNs !! left direction
+  let r = unNs !! right direction
+  let p = unNs !! invert direction
+  -- if it is, use first formula
+  if isNode l && isNode r then do
+    w1 <- readTVar $ weights l
+    w2 <- readTVar $ weights r
+    writeTVar weight $ 0.5 .* (w1 <+> w2)
+    -- if its not, check for parents neigbours
+    else do
+      upNs <- unwrappedNeighbours p
+      let pl = upNs !! left direction
+      let pr = upNs !! right direction
+      let pp = upNs !! invert direction
+      wp <- readTVar $ weights p
+      if isNode pp then do
+        wpp <- readTVar $ weights pp
+        let w = 2 .* wp <-> wpp
+        writeTVar weight (checkBounds w)
+        else do
+          let candidates = filter isNode [pl, pr]
+          case candidates of 
+            [] -> error "in newWeight: new node has only one neighbour."
+            (x:xs) -> do
+            wx <- readTVar $ weights x
+            let w = 2.* wp <-> wx
+            writeTVar weight (checkBounds w)
 

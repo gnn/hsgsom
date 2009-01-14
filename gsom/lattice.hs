@@ -7,7 +7,8 @@ module Gsom.Lattice where
 -- Standard modules
 ------------------------------------------------------------------------------
 
-import Control.Monad(filterM, foldM, (>=>))
+import Control.Monad(filterM, foldM, unless, when, (>=>))
+import Data.List(findIndices)
 import System.Random(Random, RandomGen, randomRs, split)
 
 ------------------------------------------------------------------------------
@@ -83,4 +84,37 @@ bmu i l = atomically (readTVar $ nodes l) >>= (\l' ->
 ------------------------------------------------------------------------------
 -- Manipulating
 ------------------------------------------------------------------------------
+
+-- | Inserts a node into the lattice and returns the new lattice
+
+insert :: Lattice -> Node -> STM Lattice
+insert l@(Lattice c' ns') n = do
+  c <- readTVar c'
+  ns <- readTVar ns'
+  writeTVar c' (c+1)
+  writeTVar ns' (n:ns)
+  return l
+
+-- | @'grow' node@ will create new neighbours for every Leaf neighbour of 
+-- the given @node@. 
+grow :: Node -> STM ()
+grow node = do
+  ns <- unwrappedNeighbours node
+  let holes = findIndices isLeaf ns
+  mapM_ (spawn (-1) node) holes
+
+-- | @'vent' node growthThreshold@ will check the accumulated error of the 
+-- @node@ against the given @growthThreshol@ and will do nothing if 
+-- the errror value is below the growth threshhold. Otherwise it will either 
+-- spawn new nodes or it will propagate the accumulated error value to it's 
+-- neighbours, depending on whether the node is a boundary node or not.
+vent :: Node -> Double -> STM ()
+vent Leaf _  = error "in vent: vent called with a Leaf as argument."
+vent node gt = do 
+  qE <- readTVar $ quantizationError node
+  when (qE > gt) $ do 
+    ns <- unwrappedNeighbours node
+    let leaves = findIndices isLeaf ns
+    unless (null leaves) (grow node)
+    propagate node
 
