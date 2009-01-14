@@ -41,7 +41,7 @@ bounds :: Inputs -> [(Double, Double)]
 bounds is = foldl1' (mapUncurry2 min max) is' where
   dupZip xs = zip xs xs
   is' = map dupZip is
-  mapUncurry2 f g = \xs ys -> (map $ ap f g) (padZip xs ys)
+  mapUncurry2 f g xs = (map $ ap f g) . padZip xs 
   ap f g ((a,b),(c,d)) = (f a c, g b d)
 
 -- | Unnormalizes the given input vectors @inputs@ assuming that it's bounds

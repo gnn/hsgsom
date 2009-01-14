@@ -49,12 +49,11 @@ new g is = atomically $ do
   nodes <- sequence $ replicate 4 (newTVar Leaf)
   neighbours <- mapM (mapM (\n -> if n < 0 
     then newTVar Leaf 
-    else return $ nodes!!n)) 
-    ( [-1, -1, 1, 3] 
-    : [0, -1, -1, 2] 
-    : [3, 1, -1, -1] 
-    : [-1, 0, 2, -1] 
-    : [])
+    else return $ nodes!!n))
+    [ [-1, -1, 1, 3] 
+    , [0, -1, -1, 2] 
+    , [3, 1, -1, -1] 
+    , [-1, 0, 2, -1] ]
   sequence (zipWith3 node ids weights neighbours) >>= 
     zipWithM_ writeTVar nodes
   count' <- newTVar 4

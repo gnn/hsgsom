@@ -209,7 +209,7 @@ checkBounds i = let (min',max') = (minimum i, maximum i) in
 newWeight :: Node -> Int -> STM ()
 newWeight node direction = let 
   weight = weights node 
-  write w = writeTVar weight (checkBounds w) 
+  writeWeight = writeTVar weight . checkBounds  
   in do
   -- if the node already has a weight vector don't do anything.
   -- Update should be called in this case.
@@ -237,7 +237,7 @@ newWeight node direction = let
       if isNode pp then do
         wpp <- readTVar $ weights pp
         let w = 2 .* wp <-> wpp
-        writeTVar weight (checkBounds w)
+        writeWeight w
         else do
           let candidates = filter isNode [pl, pr]
           case candidates of 
@@ -245,5 +245,5 @@ newWeight node direction = let
             (x:xs) -> do
             wx <- readTVar $ weights x
             let w = 2.* wp <-> wx
-            writeTVar weight (checkBounds w)
+            writeWeight w
 
