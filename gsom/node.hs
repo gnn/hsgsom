@@ -48,10 +48,11 @@ data Node =
   , -- | The node's weight vector. This is the center of the voronoi cell the 
     -- node represents.
   weights :: TVar Input
-  , -- | The list of the node's neighbours.
+  , -- | The node's neighbours.
   neighbours :: Neighbours}
 type Nodes = [Node]
 
+-- | A node's neighbours are stored in fields of type @Neighbours@.
 type Neighbours = [TVar Node]
 
 instance Eq Node where
@@ -65,12 +66,11 @@ instance Eq Node where
 
 -- | @'node' id weights neighbours@ creates a node with the specified 
 -- parameters.
-node :: Int -> Input -> Neigbours -> STM Node
+node :: Int -> Input -> Neighbours -> STM Node
 node iD weights neighbours = do
   wrappedWeights <- newTVar weights
   initialError <- newTVar 0
-  wrappedNeighbours <- mapM newTVar neighbours
-  return $! Node iD initialError wrappedWeights wrappedNeighbours
+  return $! Node iD initialError wrappedWeights neighbours
 
 ------------------------------------------------------------------------------
 -- Modifying nodes
