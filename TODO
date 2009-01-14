@@ -1,7 +1,5 @@
 IMPORTANT:
-  - Fix Gsom.Lattice.new.
-  - Fix Gsom.Node.spawnDirected to spawn with correct node id.
-  - Add calculation of weight vector to Gsom.Node.spawnDirected.
+  - Fix Gsom.Lattice.grow to invoke Gsom.Node.spawn with correct node id.
   - Track down uses of setNeighbours. I'm a little suspicious that this 
     function introduces some bugs.
 
@@ -21,9 +19,6 @@ node.hs;
 
   - Change the interface of Gsom.Node. Restrict creation of nodes so that 
     every newly created node is wrapped in a TVar.
-
-lattice.hs:
-  - Fix the bug in Gsom.Lattice.new.
 
 tests.hs:
   - add test to check whether normlize acts as id on inputs which are already 
