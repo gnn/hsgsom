@@ -48,7 +48,7 @@ bounds is = foldl1' (mapUncurry2 min max) is' where
 -- prviously where @bounds@.
 unnormalize :: Inputs -> [(Double, Double)] -> Inputs
 unnormalize is bnds = map (map f . zip bnds) is where   
-  f ((min',max'), n) = if min' == max' then min' else n*(max'-min')+min'
+  f ((min',max'), n) = if min' == max' then min' else n*(max' - min')+min'
 
 -- | Calculating the dimension of a given set of inputs just means finding 
 -- the length of the longest input vector.
@@ -63,7 +63,7 @@ dimension = maximum . map length
 -- @i1@ and @i2@. If @i1@ and @i2@ have different lengths, excess 
 -- values are ignored.
 distance :: Input -> Input -> Double
-distance i1 = sqrt . sum . zipWith (\a b -> (a-b)**2) i1
+distance i1 = sqrt . sum . zipWith (\a b -> (a - b)**2) i1
 
 -- | Multiplication of an input vector with a scalar.
 infixr 7 .* 
