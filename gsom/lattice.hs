@@ -7,8 +7,8 @@ module Gsom.Lattice where
 -- Standard modules
 ------------------------------------------------------------------------------
 
-import Control.Monad(filterM, foldM, unless, when, (>=>))
-import Data.List(findIndices)
+import Control.Monad(filterM, foldM, unless, when, zipWithM_, (>=>))
+import Data.List(findIndices, zipWith3)
 import System.Random(Random, RandomGen, randomRs, split)
 
 ------------------------------------------------------------------------------
@@ -41,26 +41,25 @@ data Lattice = Lattice {
 -- initialized with values between 0 and 1 using the random number generator g
 -- and with the weight vectors having dimension equal to the input dimension.
 new :: RandomGen g => g -> Inputs -> IO Lattice
-new = undefined
-{-
 new g is = atomically $ do
+  let ids = [0..3]
   let gs g = let (g1, g2) = split g in g1 : gs g2
-  let weights n = take (dimension is) $ randomRs (0, 1) (gs g !! n)
-  nodes <- mapM
-    (\n -> node n (weights n) (replicate 4 Leaf))
-    [0,1,2,3]
-  let 
-    neighbours = map (map (\n -> if n < 0 then Leaf else nodes!!n))
-      ( [-1, -1, 1, 3] 
-      : [0, -1, -1, 2] 
-      : [3, 1, -1, -1] 
-      : [-1, 0, 2, -1] 
-      : [])
-  mapM_ (uncurry setNeighbours) (zip nodes neighbours)
+  let weights = [ take (dimension is) $ randomRs (0, 1) (gs g !! n) | n <- ids]
+  -- create the TVars for the initial nodes
+  nodes <- sequence $ replicate 4 (newTVar Leaf)
+  neighbours <- mapM (mapM (\n -> if n < 0 
+    then newTVar Leaf 
+    else return $ nodes!!n)) 
+    ( [-1, -1, 1, 3] 
+    : [0, -1, -1, 2] 
+    : [3, 1, -1, -1] 
+    : [-1, 0, 2, -1] 
+    : [])
+  sequence (zipWith3 node ids weights neighbours) >>= 
+    zipWithM_ writeTVar nodes
   count' <- newTVar 4
-  nodes' <- newTVar nodes
+  nodes' <- mapM readTVar nodes >>= newTVar
   return $ Lattice count' nodes'
--}
 
 ------------------------------------------------------------------------------
 -- Reading
