@@ -2,7 +2,19 @@ module Gsom(Gsom(..), Parameters(..), Input, Inputs) where
 
 import System.Random
 
-import Gsom.Lattice(Lattice)
+------------------------------------------------------------------------------
+-- Standard Modules
+------------------------------------------------------------------------------
+
+import Control.Monad(foldM, liftM, when)
+import Control.Concurrent.STM
+
+------------------------------------------------------------------------------
+-- Private Modules
+------------------------------------------------------------------------------
+
+import Gsom.Lattice(Lattice(..), bmu, newCentered, newRandom, putLattice, vent)
+import Gsom.Node(neighbourhood, update)
 import Gsom.Input(Input, Inputs)
 
 -- | These are the parameters needed to create a gsom which are needed in every 
