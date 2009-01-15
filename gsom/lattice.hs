@@ -37,14 +37,28 @@ data Lattice = Lattice {
 -- Creation
 ------------------------------------------------------------------------------
 
--- | @'new' g inputs@ creates a new minimal lattice where weights are randomly
--- initialized with values between 0 and 1 using the random number generator g
--- and with the weight vectors having dimension equal to the input dimension.
-new :: RandomGen g => g -> Inputs -> IO Lattice
-new g is = atomically $ do
-  let ids = [0..3]
-  let gs g = let (g1, g2) = split g in g1 : gs g2
-  let weights = [ take (dimension is) $ randomRs (0, 1) (gs g !! n) | n <- ids]
+-- | @'newRandom' g dimension@ creates a new minimal lattice where weights are 
+-- randomly initialized with values between 0 and 1 using the random number 
+-- generator @g@ and with the weight vectors having the specified @dimension@.
+newRandom :: RandomGen g => g -> Int -> IO Lattice
+newRandom g dimension = let 
+  gs g = let (g1, g2) = split g in g1 : gs g2
+  weights = [randomRs (0, 1) g' | g' <- gs g]
+  in new weights dimension
+
+-- | @'newNormalized' dimension@ creates a new minimal lattice where weights 
+-- are initialized with all components having the value @0.5@ the and with 
+-- the weight vectors havin length @dimension@.
+newCentered :: Int -> IO Lattice
+newCentered dimension = new (cycle [cycle [0.5]]) dimension
+
+-- | Generates a new @'Lattice'@ given the supply of @weights@ with each node
+-- having a weight vector of the given @dimension@.
+-- Internal. (Not exportet.)
+new :: Inputs -> Int -> IO Lattice
+new ws dimension = let 
+  ids = [0..3]
+  weights = [ map (take dimension) ws !! n | n <- ids ] in atomically $ do
   -- create the TVars for the initial nodes
   nodes <- sequence $ replicate 4 (newTVar Leaf)
   neighbours <- mapM (mapM (\n -> if n < 0 
