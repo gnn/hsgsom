@@ -8,8 +8,8 @@ module Gsom.Node(
     module Control.Concurrent.STM
   , module Control.Monad
   , Node(..), Nodes
-  , isLeaf, isNode, node, propagate, setNeighbours, spawn, unwrappedNeighbours 
-  , update) where 
+  , isLeaf, isNode, neighbourhood, node, propagate, putNode, spawn
+  , unwrappedNeighbours, update) where 
 
 
 ------------------------------------------------------------------------------

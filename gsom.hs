@@ -47,3 +47,31 @@ data Gsom = Gsom {
 , parameters    :: Parameters
 }
 
+-- | @'pass' parameters learningRate lattice inputs grow @ will refine the 
+-- given @lattice@ by making one pass over the given @inputs@ with the 
+-- GSOM algorithm using the specified @parameters@.
+-- If @grow@ is set to true it will be a growin pass otherwise it will be 
+-- smoothing pass.
+pass :: Parameters -> Double -> Lattice -> Inputs -> Bool -> IO Lattice
+pass parameters learningRate lattice is grow = 
+  liftM snd $ foldM consume (learningRate, lattice) is where 
+    gt = growthThreshold parameters 
+    neighbourhoodSize = if grow then 3 else 1 
+    consume (lr, l) i = do
+      winner <- bmu i lattice
+      atomically $ do
+        affected <- neighbourhood winner neighbourhoodSize
+        update i lr affected
+        when grow (mapM_ (\n -> vent l n gt) affected)
+        nodeCount <- readTVar (count l)
+        return (updateLearningRate (alpha parameters) nodeCount lr, l)
+
+-- | Used to update the learning rate. See parameters for details.
+updateLearningRate :: Double -> Int -> Double -> Double
+updateLearningRate alpha nodeCount lr = alpha * f * lr where
+  f = (1 - 3.8) / fromIntegral nodeCount
+
+-- | Calculates the growth
+growthThreshold :: Parameters -> Double
+growthThreshold ps = 
+  negate $ sqrt (fromIntegral $ d ps) * log (spreadFactor ps)
