@@ -119,14 +119,16 @@ grow lattice node = do
       node' <- spawn id parent direction
       insert lattice node' >>= readTVar.count
 
--- | @'vent' node growthThreshold@ will check the accumulated error of the 
--- @node@ against the given @growthThreshol@ and will do nothing if 
+-- | @'vent' lattice node growthThreshold@ will check the accumulated error 
+-- of the @node@ against the given @growthThreshol@ and will do nothing if 
 -- the errror value is below the growth threshhold. Otherwise it will either 
 -- spawn new nodes or it will propagate the accumulated error value to it's 
 -- neighbours, depending on whether the node is a boundary node or not.
-vent :: Node -> Double -> STM ()
-vent Leaf _  = error "in vent: vent called with a Leaf as argument."
-vent node gt = do 
+-- If new nodes are spawned they will added to @lattice@.
+
+vent :: Lattice -> Node -> Double -> STM ()
+vent _ Leaf _  = error "in vent: vent called with a Leaf as argument."
+vent lattice node gt = do 
   qE <- readTVar $ quantizationError node
   when (qE > gt) $ do 
     ns <- unwrappedNeighbours node
