@@ -7,7 +7,7 @@ module Gsom.Lattice where
 -- Standard modules
 ------------------------------------------------------------------------------
 
-import Control.Monad(filterM, foldM, unless, when, zipWithM_, (>=>))
+import Control.Monad(filterM, foldM, foldM_, unless, when, zipWithM_, (>=>))
 import Data.List(findIndices, zipWith3)
 import System.Random(Random, RandomGen, randomRs, split)
 
@@ -107,13 +107,17 @@ insert l@(Lattice c' ns') n = do
   writeTVar ns' (n:ns)
   return l
 
--- | @'grow' node@ will create new neighbours for every Leaf neighbour of 
--- the given @node@. 
-grow :: Node -> STM ()
-grow node = do
+-- | @'grow' lattice node@ will create new neighbours for every Leaf 
+-- neighbour of the given @node@ and add the created nodes to @lattice@. 
+grow :: Lattice -> Node -> STM ()
+grow lattice node = do
   ns <- unwrappedNeighbours node
   let holes = findIndices isLeaf ns
-  mapM_ (spawn (-1) node) holes
+  id <- readTVar $ count lattice
+  foldM_ (spawnAndInsert node) id holes where
+    spawnAndInsert parent id direction = do
+      node' <- spawn id parent direction
+      insert lattice node' >>= readTVar.count
 
 -- | @'vent' node growthThreshold@ will check the accumulated error of the 
 -- @node@ against the given @growthThreshol@ and will do nothing if 
@@ -127,6 +131,6 @@ vent node gt = do
   when (qE > gt) $ do 
     ns <- unwrappedNeighbours node
     let leaves = findIndices isLeaf ns
-    unless (null leaves) (grow node)
+    unless (null leaves) (grow lattice node)
     propagate node
 
