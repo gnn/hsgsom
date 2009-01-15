@@ -136,3 +136,14 @@ vent lattice node gt = do
     unless (null leaves) (grow lattice node)
     propagate node
 
+------------------------------------------------------------------------------
+-- Output
+------------------------------------------------------------------------------
+
+putLattice :: Lattice -> IO String
+putLattice l@(Lattice c' ns') = do
+  (c, ns) <- atomically $ liftM2 (,) (readTVar c') (readTVar ns')
+  ns <- liftM concat $ mapM putNode ns
+  return $ unlines ("Lattice: " : ("  Count: " ++ show c) : 
+    map ("    " ++ ) ns)
+
