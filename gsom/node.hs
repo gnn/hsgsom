@@ -92,8 +92,7 @@ update input lr nodes = mapM_ (\n -> let w = weights n in
   nodes where 
     adjust w = w <+> lr .* (input <-> w)
  
--- | Used by @'spawn'@ and @'Gsom.Lattice.new'@ to spawn only a particular 
--- node. Returns the spawned node.
+-- | Used to spawn only a particular node. Returns the spawned node.
 -- @'spawn' parent id direction@ will create a new node as a 
 -- neighbour of @parent@ at index @direction@, making @parent@ the neighbour 
 -- of the new node at index @invert direction@ with the new node having an 
@@ -153,6 +152,7 @@ isNode      = not.isLeaf
 
 -- | Calculates the neighbourhood of the given size of the given node.
 -- It's not very efficient so you shouldn't try big neihbourhood sizes.
+-- The returned neighbourhood includes @node@.
 neighbourhood :: Node -> Int -> STM Nodes
 neighbourhood Leaf _ = 
   error "in neighbhourhood: neighbourhood shouldn't be called on leaves."
