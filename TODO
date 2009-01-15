@@ -33,3 +33,5 @@ tests.hs:
 
   - refactor the clunky normalize_unnormalize_id test.
 
+  - add test that the node given as an argument to neighbourhood is actually 
+    an element of the returned neighbourhood.
