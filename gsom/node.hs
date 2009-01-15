@@ -247,3 +247,17 @@ newWeight node direction = let
             let w = 2.* wp <-> wx
             writeWeight w
 
+------------------------------------------------------------------------------
+-- Output
+------------------------------------------------------------------------------
+
+putNode :: Node -> IO [String]
+putNode Leaf = return ["Leaf"]
+putNode node = atomically $ do
+  let id = "iD : " ++ show (iD node)
+  e <- (readTVar $ quantizationError node) >>= return . ("error : " ++) . show
+  w <- (readTVar $ weights node) >>= return . ("weights: " ++ ) . show
+  ns <- mapM readTVar (neighbours node) >>= 
+    return . show . map iD . (filter isNode)
+  return $ "Node:" : map ("  " ++) [id, e, w, ns]
+
