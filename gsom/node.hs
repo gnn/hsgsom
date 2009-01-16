@@ -255,9 +255,9 @@ putNode :: Node -> IO [String]
 putNode Leaf = return ["Leaf"]
 putNode node = atomically $ do
   let id = "iD : " ++ show (iD node)
-  e <- (readTVar $ quantizationError node) >>= return . ("error : " ++) . show
-  w <- (readTVar $ weights node) >>= return . ("weights: " ++ ) . show
-  ns <- mapM readTVar (neighbours node) >>= 
-    return . show . map iD . (filter isNode)
+  e <- liftM (("error : " ++) . show) (readTVar $ quantizationError node) 
+  w <- liftM (("weights: " ++ ) . show) (readTVar $ weights node)
+  ns <- liftM (show . map iD . filter isNode) 
+              (mapM readTVar (neighbours node))
   return $ "Node:" : map ("  " ++) [id, e, w, ns]
 
