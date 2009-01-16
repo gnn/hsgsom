@@ -50,7 +50,7 @@ newRandom g dimension = let
 -- are initialized with all components having the value @0.5@ the and with 
 -- the weight vectors havin length @dimension@.
 newCentered :: Int -> IO Lattice
-newCentered dimension = new (cycle [cycle [0.5]]) dimension
+newCentered = new (cycle [cycle [0.5]])
 
 -- | Generates a new @'Lattice'@ given the supply of @weights@ with each node
 -- having a weight vector of the given @dimension@.
