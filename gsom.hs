@@ -66,7 +66,7 @@ pass parameters learningRate lattice is grow =
         updateError winner i
         when grow (vent l winner gt)
         nodeCount <- readTVar (count l)
-        return (updateLearningRate (alpha parameters) nodeCount lr, l)
+        return $! (updateLearningRate (alpha parameters) nodeCount lr, l)
 
 -- | Used to update the learning rate. See parameters for details.
 updateLearningRate :: Double -> Int -> Double -> Double

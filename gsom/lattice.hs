@@ -88,8 +88,8 @@ bmu i l = atomically (readTVar $ nodes l) >>= (\l' ->
       foldM (\n1 n2 -> atomically $ do
         w1 <- readTVar $ weights n1
         w2 <- readTVar $ weights n2
-        if distance i w1 <= distance i w2 
-          then return n1 else return n2) 
+        return $! if distance i w1 <= distance i w2 
+          then n1 else n2) 
       x xs
   )
 
@@ -105,7 +105,7 @@ insert l@(Lattice c' ns') n = do
   ns <- readTVar ns'
   writeTVar c' (c+1)
   writeTVar ns' (n:ns)
-  return l
+  return $! l
 
 -- | @'grow' lattice node@ will create new neighbours for every Leaf 
 -- neighbour of the given @node@ and add the created nodes to @lattice@. 
