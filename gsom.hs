@@ -1,4 +1,4 @@
-module Gsom(Gsom(..), Parameters(..), Input, Inputs) where
+module Gsom(Gsom(..), Parameters(..), Input, Inputs, pass) where
 
 import System.Random
 
