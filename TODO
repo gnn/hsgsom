@@ -35,3 +35,8 @@ tests.hs:
 
   - add test that the node given as an argument to neighbourhood is actually 
     an element of the returned neighbourhood.
+
+  - add test that checks whether neighbourhood actually calculates the 
+    correct neighbourhood to prevent the duplicating old nodes bug. 
+    (looks like neighbourhood really should have a few tests)
+
