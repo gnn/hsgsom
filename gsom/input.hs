@@ -16,7 +16,7 @@ import Data.List(foldl1', transpose)
 -- Utility functions on lists of inputvectors
 ------------------------------------------------------------------------------
 
--- | For now our input vectors are just lists of doubles.
+-- | Input vectors are just lists of doubles.
 type Input = [Double]
 type Inputs = [Input]
 

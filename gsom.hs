@@ -25,7 +25,8 @@ data Parameters = Parameters {
   -- formula:
   --
   -- * @newLearningRate = alpha * f(n) * oldLearningRate@
-  -- * @f(n) = (1-R/n)
+  --
+  -- * @f(n) = (1-R/n)@
   --
   -- where @n@ is the number of nodes currently in the map and @R@ is 
   -- currently taken to be @3.8@, as specified in the paper by Alahakoon and 
@@ -50,7 +51,7 @@ data Gsom = Gsom {
 -- | @'pass' parameters learningRate lattice inputs grow @ will refine the 
 -- given @lattice@ by making one pass over the given @inputs@ with the 
 -- GSOM algorithm using the specified @parameters@.
--- If @grow@ is set to true it will be a growin pass otherwise it will be 
+-- If @grow@ is set to true it will be a growing pass otherwise it will be 
 -- smoothing pass.
 pass :: Parameters -> Double -> Lattice -> Inputs -> Bool -> IO Lattice
 pass parameters learningRate lattice is grow = 
