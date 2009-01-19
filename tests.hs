@@ -39,22 +39,27 @@ main = mapM_ (\(label, test) -> putStr label >> test) tests
 -- | All the tests which should be performed along with their labels.
 tests :: [(String, IO ())]
 tests = formatLabels 
-  $ ("normalize/idempotent", test prop_normalize_idempotent)
-  : ("normalize/bounds", test prop_normalize_bounds)
-  : ("unnormalize.normalize/id", test prop_unnormalize_normalize_id)
-  : []
+  [ ("normalize/idempotent", test prop_normalize_idempotent)
+  , ("normalize/bounds", test prop_normalize_bounds)
+  , ("unnormalize.normalize/id", test prop_unnormalize_normalize_id)
+  ]
+
+-- For testing it is more convenient to have a version of normalize which 
+-- doesn't need to have the bounds as a paramter but calculates them 
+-- implicitly using bounds.
+normalize' is = normalize (bounds is) is
 
 -- Normalize should be idempotent.
-prop_normalize_idempotent s = (normalize.normalize) s == normalize s
+prop_normalize_idempotent s = (normalize'. normalize') s == normalize' s
 
 -- The result of normalize should contain only values between 0 and 1.
-prop_normalize_bounds s = and.(map and).(map $ map test) $ (normalize s) where
- test = (\x -> (x>=0 && x<=1))
+prop_normalize_bounds s = all and . (map $ map test) $ normalize' s where
+ test x = x>=0 && x<=1
 
 -- First normalizing and then unnormalizing a list should give the list back,
 -- but we have to accomodate for floating point precision errors.
 -- This test is horrible so I should try to reformulate it somehow.
 prop_unnormalize_normalize_id s = 
   (foldl max 0 $ map (foldl (max.abs) 0) $
-    zipWith (<->) ((flip unnormalize bnds . normalize) s) s) < 1*10**(-13) 
-      where bnds = bounds s
+    zipWith (<->) ((unnormalize bs . normalize bs) s) s) < 1*10**(-13) 
+      where bs = bounds s

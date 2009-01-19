@@ -10,7 +10,7 @@ module Gsom.Input(
 -- Standard modules
 ------------------------------------------------------------------------------
 
-import Data.List(foldl1', transpose)
+import Data.List(foldl', transpose)
 
 ------------------------------------------------------------------------------
 -- Utility functions on lists of inputvectors
@@ -20,34 +20,36 @@ import Data.List(foldl1', transpose)
 type Input = [Double]
 type Inputs = [Input]
 
+-- | The bounds of a list of inputs. Having the tuple @(a,b)@ at index @i@ 
+-- in @bounds@ means that the value at index @i@ of each of the input vectors
+-- from the inputs which where used to calculate @bounds@ is from the 
+-- intervall @[a,b]@.
+type Bounds = [(Double, Double)]
+
 -- | Normalizes input vectors.
 -- @'normalize' inputs@ takes the given list of input vectors @inputs@ and 
 -- returns a list of input vectors where each component is in @[0,1]@.
 -- If you want to unnormalize the input vectors use @'bounds'@ and 
 -- @'unnormalize'@.
-normalize :: Inputs -> Inputs
-normalize is = map (map scale . zip3 mins maxs) is where
-  scale (min', max', n) = if min' == max' then 0 else (n - min')/(max' - min')
-  mins = map minimum is'
-  maxs = map maximum is'
-  is' = transpose is
+normalize :: Bounds -> Inputs -> Inputs
+normalize bs is = map (normalizeVector bs) is where
+  normalizeVector bs = map normalizeValue . zip bs
+  normalizeValue ((a,b),v) = if a == b then 0 else (v - a)/(b - a)
 
 -- | Calculates the bounds of the input vector components.
--- @'bounds' inputs@ returns a list of pairs where having the pair @(min, max)@
--- at index i means that the @min@ is the minimum over the components at index 
--- i of the input vectors in @inputs@ while @max@ is the respective maximum.
--- It's horrible but should go through the input list in one pass.
-bounds :: Inputs -> [(Double, Double)]
-bounds is = foldl1' (mapUncurry2 min max) is' where
-  dupZip xs = zip xs xs
-  is' = map dupZip is
-  mapUncurry2 f g xs = (map $ ap f g) . padZip xs 
-  ap f g ((a,b),(c,d)) = (f a c, g b d)
+bounds :: Inputs -> Bounds
+bounds [] = []
+bounds (i:is) = foldl' f (dz i) is where
+  dz x = zip x x
+  f ps [] = ps
+  f [] xs = dz xs
+  f ((a,b):ps) (x:xs) = let a' = min a x; b' = max b x; t = f ps xs in
+    a' `seq` b' `seq` t `seq` (a',b') : t
 
 -- | Unnormalizes the given input vectors @inputs@ assuming that it's bounds
 -- prviously where @bounds@.
-unnormalize :: Inputs -> [(Double, Double)] -> Inputs
-unnormalize is bnds = map (map f . zip bnds) is where   
+unnormalize :: Bounds -> Inputs -> Inputs
+unnormalize bounds inputs = map (map f . zip bounds) inputs where   
   f ((min',max'), n) = if min' == max' then min' else n*(max' - min')+min'
 
 -- | Calculating the dimension of a given set of inputs just means finding 
