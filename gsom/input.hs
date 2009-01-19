@@ -101,3 +101,11 @@ padZip xs ys =
     GT -> (xs, ys ++ drop ly xs)
     LT -> (xs ++ drop lx ys, ys)
 
+-- | Forces a whole list. If it wasn't for this function, @'bounds'@ 
+-- would blow the stack because only the @'head'@ of the bounds would be fully
+-- evaluated while the @'tail'@ would consist of huge thunks of @'min'@ and 
+-- @'max'@ applcations.
+force :: [a] -> [a]
+force [] = []
+force (x:xs) = let tail = force xs in x `seq` tail `seq` x:tail
+
