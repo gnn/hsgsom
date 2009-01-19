@@ -7,7 +7,7 @@
 module Gsom.Node(
     module Control.Concurrent.STM
   , module Control.Monad
-  , Node(..), Nodes
+  , Neighbours, Node(..), Nodes
   , isLeaf, isNode, neighbourhood, node, propagate, putNode, spawn
   , unwrappedNeighbours, update, updateError) where 
 

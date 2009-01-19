@@ -1,7 +1,7 @@
 -- |This module contains everything concerning the input to gsom.
 
 module Gsom.Input(
-  Input, Inputs
+  Bounds, Input, Inputs
 , bounds, dimension, normalize, unnormalize
 , distance, (*.), (.*), (<+>), (<->)
 ) where 
