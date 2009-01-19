@@ -169,7 +169,7 @@ neighbourhood node size = liftM nub $ iterate (
   \wrappedNodes -> do
     ns <- wrappedNodes
     newNeighbours <- mapM readTVar . concatMap neighbours $ ns 
-    return $ ns ++ filter (not.isLeaf) ns) 
+    return $ ns ++ filter (not.isLeaf) newNeighbours) 
   (return [node]) !! size
 
 -- | @'unwrappedNeighbours' node@ returns the list of neighbours of the 
