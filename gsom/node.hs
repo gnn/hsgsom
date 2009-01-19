@@ -9,7 +9,7 @@ module Gsom.Node(
   , module Control.Monad
   , Node(..), Nodes
   , isLeaf, isNode, neighbourhood, node, propagate, putNode, spawn
-  , unwrappedNeighbours, update) where 
+  , unwrappedNeighbours, update, updateError) where 
 
 
 ------------------------------------------------------------------------------
@@ -25,7 +25,7 @@ import Data.Maybe(fromJust)
 -- Private modules
 ------------------------------------------------------------------------------
 
-import Gsom.Input(Input, (<+>), (<->), (.*)) 
+import Gsom.Input(Input, distance, (<+>), (<->), (.*)) 
 
 ------------------------------------------------------------------------------
 -- Types
@@ -91,7 +91,16 @@ update input lr nodes = mapM_ (\n -> let w = weights n in
   readTVar w >>= writeTVar w . adjust) 
   nodes where 
     adjust w = w <+> lr .* (input <-> w)
- 
+
+-- | @updateError node input@ updates the @'quantizationError'@ of @node@.
+-- The new error is just the old error plus the distance of the @node@'s 
+-- weight vector from @input@.
+updateError :: Node -> Input -> STM()
+updateError n i = let qE = quantizationError n in do
+  old <- readTVar qE
+  w <- readTVar $ weights n
+  writeTVar qE (old + distance w i)
+
 -- | Used to spawn only a particular node. Returns the spawned node.
 -- @'spawn' parent id direction@ will create a new node as a 
 -- neighbour of @parent@ at index @direction@, making @parent@ the neighbour 

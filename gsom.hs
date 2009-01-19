@@ -14,7 +14,7 @@ import Control.Concurrent.STM
 ------------------------------------------------------------------------------
 
 import Gsom.Lattice(Lattice(..), bmu, newCentered, newRandom, putLattice, vent)
-import Gsom.Node(neighbourhood, update)
+import Gsom.Node(neighbourhood, update, updateError)
 import Gsom.Input(Input, Inputs)
 
 -- | These are the parameters needed to create a gsom which are needed in every 
@@ -63,7 +63,8 @@ pass parameters learningRate lattice is grow =
       atomically $ do
         affected <- neighbourhood winner neighbourhoodSize
         update i lr affected
-        when grow (mapM_ (\n -> vent l n gt) affected)
+        updateError winner i
+        when grow (vent l winner gt)
         nodeCount <- readTVar (count l)
         return (updateLearningRate (alpha parameters) nodeCount lr, l)
 
