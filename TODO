@@ -1,5 +1,4 @@
 IMPORTANT:
-  - Fix Gsom.Lattice.grow to invoke Gsom.Node.spawn with correct node id.
   - Track down uses of setNeighbours. I'm a little suspicious that this 
     function introduces some bugs.
 
