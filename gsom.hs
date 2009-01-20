@@ -36,7 +36,9 @@ data Parameters = Parameters {
   -- that the growth threshhold may be calculated.
   d             :: Int
 , -- | The spread factor is used to calculate the growth threshold according 
-  -- to the formula GT = - sqrt('d')*ln('spreadFactor').
+  -- to the formula:
+  --
+  -- * @GT = - sqrt('d')*ln('spreadFactor')@ .
   spreadFactor  :: Double
 }
 
@@ -73,7 +75,8 @@ updateLearningRate :: Double -> Int -> Double -> Double
 updateLearningRate alpha nodeCount lr = alpha * f * lr where
   f = (1 - 3.8) / fromIntegral nodeCount
 
--- | Calculates the growth
+-- | Calculates the growth threshold as explained in the documentation
+-- for @'Parameters'@.
 growthThreshold :: Parameters -> Double
 growthThreshold ps = 
   negate $ sqrt (fromIntegral $ d ps) * log (spreadFactor ps)
