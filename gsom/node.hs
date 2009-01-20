@@ -201,54 +201,38 @@ checkBounds i = let (min',max') = (minimum i, maximum i) in
   then replicate (length i) 0.5 
   else i
 
--- | When a new node is spawned we need to calculate it's new weight vector
--- This is either done with with (w1+w2)/2 if the node is between two nodes
--- or 2*w1-w2 where w1 is the weight the parent which spawned the node 
--- and w2 is the weight of one of the parents neighbours.
--- For this we need the spawned node as an argument as well as the 
--- direction in which it was spawned so we can 
--- calculate and write it's new weight vector:
--- @'newWeight' node parent direction@
+-- | When a new node is spawned we need to calculate it's new weight vector.
+-- If the new node is spawned from parent p in direction d and p has a 
+-- neighbour n in the direction d' opposite to d then the new weight 
+-- vector nw is calculated according to the formula:
+--
+-- * @nw = 2 * ('weights' p) - ('weights' n)@.
+--
+-- In all other cases there exists exactly one neighbour of the new node.
+-- Let this neighbour be called n and let d' be the direction in which we 
+-- have to go to reach this neighbour from the new node. Let s then be 
+-- the child of the new node's parent p in direction d'.
+-- The new weights are then calculated according to the formula:
+--
+-- * @nw = p + n - s
 newWeight :: Node -> Int -> STM ()
-newWeight node direction = let 
-  weight = weights node 
-  writeWeight = writeTVar weight . checkBounds  
-  in do
-  -- if the node already has a weight vector don't do anything.
-  -- Update should be called in this case.
-  uW <- readTVar weight
-  unless (null uW) (error 
-    "in newWeight: node already has a weight vector. Update should be called.")
-  -- get the new nodes neighbours
-  unNs <- unwrappedNeighbours node
-  -- check whether the new node is in between two nodes
-  let l = unNs !! left direction
-  let r = unNs !! right direction
-  let p = unNs !! invert direction
-  -- if it is, use first formula
-  if isNode l && isNode r then do
-    w1 <- readTVar $ weights l
-    w2 <- readTVar $ weights r
-    writeTVar weight $ 0.5 .* (w1 <+> w2)
-    -- if its not, check for parents neigbours
+newWeight node d = let 
+  w = weights node 
+  ns = neighbours node in do
+  parent <- readTVar $ ns !! invert d
+  sibling <- readTVar $ neighbours parent !! invert d 
+  wp <- readTVar $ weights parent
+  if isNode sibling 
+    then do
+      ws <- readTVar $ weights sibling 
+      writeTVar w $ 2 .* wp <+> ws
     else do
-      upNs <- unwrappedNeighbours p
-      let pl = upNs !! left direction
-      let pr = upNs !! right direction
-      let pp = upNs !! invert direction
-      wp <- readTVar $ weights p
-      if isNode pp then do
-        wpp <- readTVar $ weights pp
-        let w = 2 .* wp <-> wpp
-        writeWeight w
-        else do
-          let candidates = filter isNode [pl, pr]
-          case candidates of 
-            [] -> error "in newWeight: new node has only one neighbour."
-            (x:xs) -> do
-            wx <- readTVar $ weights x
-            let w = 2.* wp <-> wx
-            writeWeight w
+      candidates <- mapM readTVar $ (map (ns !!)) [left d, right d]
+      let d' = fromJust $ findIndex isNode candidates
+      wn <- readTVar (ns !! d') >>= readTVar . weights
+      ws <- readTVar (neighbours parent !! d') >>= readTVar . weights
+      writeTVar w $ wp <+> wn <-> ws
+      
 
 ------------------------------------------------------------------------------
 -- Output
