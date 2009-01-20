@@ -76,12 +76,6 @@ node iD weights neighbours = do
 -- Modifying nodes
 ------------------------------------------------------------------------------
 
--- | @'setNeighbours' node nodes@ sets the neighbours of @node@ to @nodes@. 
-setNeighbours :: Node -> Nodes -> STM Node
-setNeighbours n ns = do
-  mapM_ (uncurry writeTVar) (zip (neighbours n) ns)
-  return n
-
 -- | @'update' input learning_rate nodes@ updates 
 -- the weights of the nodes in @nodes@ according to the formula
 --
