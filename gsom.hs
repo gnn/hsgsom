@@ -77,3 +77,9 @@ updateLearningRate alpha nodeCount lr = alpha * f * lr where
 growthThreshold :: Parameters -> Double
 growthThreshold ps = 
   negate $ sqrt (fromIntegral $ d ps) * log (spreadFactor ps)
+
+-- | @n `times` l@ returns @l@ repeated @n@ times.
+-- @l@ has to be finite and because the length of @l@ is calculated
+-- in the process.
+times :: Int -> [a] -> [a]
+n `times` l = take (n * length l) (cycle l)
