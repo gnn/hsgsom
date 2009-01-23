@@ -17,9 +17,9 @@ module Gsom.Node(
 ------------------------------------------------------------------------------
 
 import Control.Concurrent.STM
-import Control.Monad(liftM, liftM2, mapM, unless)
-import Data.List(findIndex, findIndices, nub, sortBy)
-import Data.Maybe(fromJust)
+import Control.Monad
+import Data.List
+import Data.Maybe
 
 ------------------------------------------------------------------------------
 -- Private modules

@@ -15,7 +15,9 @@ module Gsom.Phase where
 -- Private Modules
 ------------------------------------------------------------------------------
 
-import Gsom.Lattice
+import Gsom.Input
+import Gsom.Lattice hiding (grow)
+import Gsom.Node
 
 ------------------------------------------------------------------------------
 -- Types

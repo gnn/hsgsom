@@ -10,7 +10,7 @@ module Gsom.Input(
 -- Standard modules
 ------------------------------------------------------------------------------
 
-import Data.List(foldl', transpose)
+import Data.List
 
 ------------------------------------------------------------------------------
 -- Utility functions on lists of inputvectors

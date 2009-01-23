@@ -7,15 +7,14 @@ module Gsom.Lattice where
 -- Standard modules
 ------------------------------------------------------------------------------
 
-import Control.Monad(filterM, foldM, foldM_, unless, when, zipWithM_, (>=>))
-import Data.List(findIndices, zipWith3)
-import System.Random(Random, RandomGen, randomRs, split)
+import Data.List hiding (insert)
+import System.Random
 
 ------------------------------------------------------------------------------
 -- Private modules
 ------------------------------------------------------------------------------
 
-import Gsom.Input(Input, Inputs, dimension, distance)
+import Gsom.Input
 import Gsom.Node
 
 ------------------------------------------------------------------------------
