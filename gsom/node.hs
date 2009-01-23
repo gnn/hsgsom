@@ -65,7 +65,7 @@ instance Eq Node where
 ------------------------------------------------------------------------------
 
 -- | @'node' id weights neighbours@ creates a node with the specified 
--- parameters.
+-- parameters and initial quantization error of @0@.
 node :: Int -> Input -> Neighbours -> STM Node
 node iD weights neighbours = do
   wrappedWeights <- newTVar weights
@@ -154,8 +154,11 @@ isLeaf _    = False
 isNode      = not.isLeaf
 
 -- | Calculates the neighbourhood of the given size of the given node.
+-- A neighbourhood size of @0@ means that only the given node will be 
+-- an element of the returned set while a size of one will return the 
+-- given node and it's immediate neighbours and so on.
 -- It's not very efficient so you shouldn't try big neihbourhood sizes.
--- The returned neighbourhood includes @node@.
+-- The returned neighbourhood always includes @node@.
 neighbourhood :: Node -> Int -> STM Nodes
 neighbourhood Leaf _ = 
   error "in neighbhourhood: neighbourhood shouldn't be called on leaves."
