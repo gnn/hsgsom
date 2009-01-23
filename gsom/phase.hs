@@ -4,7 +4,10 @@
 -- according to a certain set of specified parameters.
 -- This module contains all the functionality needed to run one or more 
 -- phases of the GSOM algorithm.
-module Gsom.Phase where 
+module Gsom.Phase(
+  Phase,
+  phase
+) where 
 
 ------------------------------------------------------------------------------
 -- Standard modules
