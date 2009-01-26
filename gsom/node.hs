@@ -18,6 +18,7 @@ module Gsom.Node(
 
 import Control.Concurrent.STM
 import Control.Monad
+import Data.Function
 import Data.List
 import Data.Maybe
 
@@ -52,13 +53,21 @@ data Node =
   neighbours :: Neighbours}
 type Nodes = [Node]
 
--- | A node's neighbours are stored in fields of type @Neighbours@.
-type Neighbours = [TVar Node]
-
 instance Eq Node where
   Leaf == Leaf = True 
   Node{iD = id1} == Node{iD = id2} = id1 == id2
   _ == _ = False
+
+-- | A node's neighbours are stored in fields of type @Neighbours@.
+type Neighbours = [TVar Node]
+
+-- | The type of neighbourhoods. Wherever a neighbourhood of a node
+-- is neede, this type should be used.
+-- A @Neighbourhood@ consits of a list of pairs of nodes and their 
+-- discrete grid distance from the source of the neighbourhood.
+-- The source node is the only one with distance @0@ while immediat 
+-- neighbours get distance one and so on.
+type Neighbourhood = [(Int, Node)]
 
 ------------------------------------------------------------------------------
 -- Creation
@@ -76,15 +85,13 @@ node iD weights neighbours = do
 -- Modifying nodes
 ------------------------------------------------------------------------------
 
--- | @'update' input learning_rate nodes@ updates 
--- the weights of the nodes in @nodes@ according to the formula
+-- | @'update' input learning_rate kernel neighbour@ updates 
+-- the weights of the @neighbour@ according to the formula:
 --
--- * @\weight -> weight + learning_rate * (input - weight)@
-update :: Input -> Double -> Nodes -> STM ()
-update input lr nodes = mapM_ (\n -> let w = weights n in 
-  readTVar w >>= writeTVar w . adjust) 
-  nodes where 
-    adjust w = w <+> lr .* (input <-> w)
+-- * @\weight -> weight + learning_rate * (kernel d) (input - weight)@
+update :: Input -> Double -> (Int -> Double) -> (Int, Node) -> STM ()
+update input lr k (d,n) = modify n weights adjust where 
+    adjust w = w <+> (lr * k d) .* (input <-> w)
 
 -- | @updateError node input@ updates the @'quantizationError'@ of @node@.
 -- The new error is just the old error plus the distance of the @node@'s 
@@ -132,13 +139,12 @@ spawn id parent direction = do
 
 -- | @'propagate' node@ propagates the accumulated error of the given @node@ 
 -- to it's neighbours.
-propagate :: Node -> STM()
-propagate node = do
-  let factor = 1 + length (neighbours node)
-  nodes <- liftM (node :) (unwrappedNeighbours node)
-  errorSum <- liftM sum (mapM (readTVar.quantizationError) nodes)
-  let newError = errorSum / fromIntegral (length nodes)
-  mapM_ (flip writeTVar newError . quantizationError) nodes
+propagate :: Node -> Nodes -> STM()
+propagate node affected = do
+  let factor = fromIntegral $ length affected
+  error <- readTVar $ quantizationError node
+  modify node quantizationError (/2)
+  mapM_ (\n -> modify n quantizationError (+ 0.5 * error / factor)) affected
 
 ------------------------------------------------------------------------------
 -- Querying node properties and such
@@ -159,15 +165,21 @@ isNode      = not.isLeaf
 -- given node and it's immediate neighbours and so on.
 -- It's not very efficient so you shouldn't try big neihbourhood sizes.
 -- The returned neighbourhood always includes @node@.
-neighbourhood :: Node -> Int -> STM Nodes
+neighbourhood :: Node -> Int -> STM Neighbourhood
 neighbourhood Leaf _ = 
   error "in neighbhourhood: neighbourhood shouldn't be called on leaves."
-neighbourhood node size = liftM nub $ iterate ( 
-  \wrappedNodes -> do
-    ns <- wrappedNodes
-    newNeighbours <- mapM readTVar . concatMap neighbours $ ns 
-    return $ ns ++ filter isNode newNeighbours) 
-  (return [node]) !! size
+neighbourhood node radius = iterate ( 
+  \pairs -> do
+    unwrapped <- pairs
+    let border = last . groupBy ((==) `on` fst) $ unwrapped
+    newBorder <- mapM iNs border
+    return $! (
+      nubBy ((==) `on` snd) . 
+      (unwrapped ++)        . 
+      filter (isNode . snd) . 
+      concat ) newBorder)
+  (return $! [(0,node)]) !! radius where
+    iNs (d,n) = mapM (liftM ((,) $ d+1) . readTVar) (neighbours n)
 
 -- | @'unwrappedNeighbours' node@ returns the list of neighbours of the 
 -- given @node@.
@@ -235,7 +247,11 @@ newWeight node d = let
       wn <- readTVar (ns !! d') >>= readTVar . weights
       ws <- readTVar (neighbours parent !! d') >>= readTVar . weights
       writeTVar w $ wp <+> wn <-> ws
-      
+     
+-- | Used to modify the fields of a node with.
+modify :: Node -> (Node -> TVar a) -> (a -> a) -> STM ()
+modify node selector modification = let var = selector node in
+  readTVar var >>= writeTVar var . modification
 
 ------------------------------------------------------------------------------
 -- Output

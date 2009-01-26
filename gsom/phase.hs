@@ -48,14 +48,60 @@ data Phase = Phase {
   learningRate :: Int -> Int -> Double,
   -- | The kernel function. It is used in conjunction with the learning 
   -- rate to adjust weight adaption. 
-  -- @kernel gridDistance currentNeighbourhoodsize@ should take a nodes
-  -- grid distance from the winning node and the neighbourhood size which
-  -- is in effect during the current step. This neighbourhood size will be
-  -- a real number due to the linear decrease.
-  kernel :: Int -> Double -> Double,
+  -- @kernel currentNeighbourhoodsize gridDistance@ should take the 
+  -- neighbourhood size which is in effect during the current step and
+  -- a nodes grid distance from the winning node. 
+  -- The neighbourhood size will be a real number due to the linear decrease.
+  kernel :: Double -> Int -> Double,
   -- | The @grow@ flag determines whether this is a growing phase or not.
   -- If this is @False@ then no new nodes will be grown.
-  grow :: Bool
+  grow :: Bool,
+  -- | The spread factor is used to calculate the growth threshold according 
+  -- to the formula:
+  --
+  -- * @GT = - sqrt('d')*ln('spreadFactor')@ 
+  --
+  -- where @d@ is the input dimension.
+  spreadFactor  :: Double
 }
 
+------------------------------------------------------------------------------
+-- Running phases
+------------------------------------------------------------------------------
 
+-- | @'phase' parameters inputs@ will update the given @lattice@ by 
+-- executing one phase of the GSOM algorithm with the given @inputs@ 
+-- and @parameters@.
+phase :: Phase -> Lattice -> Inputs -> IO Lattice
+phase ps lattice is =
+  liftM snd $ foldM consume (0, lattice) supply where 
+    supply = passes ps `times` is
+    gT = growthThreshold ps $ dimension is
+    lR x = learningRate ps x steps
+    steps = length supply
+    fI = fromIntegral
+    r x = ((1 - fI x / fI steps ) * fI (neighbourhoodSize ps)) :: Double
+    consume (c, l) i = do
+      winner <- bmu i lattice
+      atomically $ do
+        affected <- neighbourhood winner $ round (r c)
+        mapM_ (update i (lR c) (kernel ps $ r c)) affected 
+        when (grow ps) (updateError winner i >> vent l winner gT)
+        nodeCount <- readTVar (count l)
+        return $! (c + 1, l)
+
+------------------------------------------------------------------------------
+-- Internal functions
+------------------------------------------------------------------------------
+
+-- | Calculates the growth threshold as explained in the documentation
+-- for @'Phase'@.
+growthThreshold :: Phase -> Int -> Double
+growthThreshold ps d = 
+  negate $ sqrt (fromIntegral d) * log (spreadFactor ps)
+
+-- | @n `times` l@ returns @l@ repeated @n@ times.
+-- @l@ has to be finite and because the length of @l@ is calculated
+-- in the process.
+times :: Int -> [a] -> [a]
+n `times` l = take (n * length l) (cycle l)

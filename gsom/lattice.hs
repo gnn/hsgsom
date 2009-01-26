@@ -107,16 +107,18 @@ insert l@(Lattice c' ns') n = do
   return $! l
 
 -- | @'grow' lattice node@ will create new neighbours for every Leaf 
--- neighbour of the given @node@ and add the created nodes to @lattice@. 
-grow :: Lattice -> Node -> STM ()
+-- neighbour of the given @node@ and add the created nodes to @lattice@.
+-- It will return the list of spawned nodes. 
+grow :: Lattice -> Node -> STM Nodes
 grow lattice node = do
   ns <- unwrappedNeighbours node
   let holes = findIndices isLeaf ns
-  id <- readTVar $ count lattice
-  foldM_ (spawnAndInsert node) id holes where
-    spawnAndInsert parent id direction = do
-      node' <- spawn id parent direction
-      insert lattice node' >>= readTVar.count
+  newId <- readTVar $ count lattice
+  foldM (spawnAndInsert node newId) [] holes where
+    spawnAndInsert parent newId spawned direction = do
+      node' <- spawn (newId + length spawned) parent direction
+      insert lattice node'
+      return $! node' : spawned
 
 -- | @'vent' lattice node growthThreshold@ will check the accumulated error 
 -- of the @node@ against the given @growthThreshol@ and will do nothing if 
@@ -132,8 +134,10 @@ vent lattice node gt = do
   when (qE > gt) $ do 
     ns <- unwrappedNeighbours node
     let leaves = findIndices isLeaf ns
-    unless (null leaves) (grow lattice node)
-    propagate node
+    affected <- if (null leaves)
+      then neighbourhood node 1 >>= mapM (return . snd)
+      else grow lattice node
+    propagate node affected
 
 ------------------------------------------------------------------------------
 -- Output
