@@ -1,9 +1,6 @@
 IMPORTANT:
-  - Remember to add the default values for Gsom.Phase.Phase and the needed
-    functions.
-    In the special case of the kernel function remember to make the 
-    necessary refactorings so that it can be used and make sure that it 
-    is used.
+  - Remember to add the default values of Gsom.Phase.Phase and predefined 
+    kernel functions.
 
 general:
   - remember to check out
@@ -21,6 +18,9 @@ node.hs;
 
   - Change the interface of Gsom.Node. Restrict creation of nodes so that 
     every newly created node is wrapped in a TVar.
+
+  - Refactor Gsom.Node.update to have a simpler type signature. Right now 
+    it's just ridiculous.
 
 tests.hs:
   - add test to check whether normlize acts as id on inputs which are already 
