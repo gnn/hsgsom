@@ -150,3 +150,13 @@ putLattice l@(Lattice c' ns') = do
   return $ unlines ("Lattice: " : ("  Count: " ++ show c) : 
     map ("    " ++ ) ns)
 
+putWeights :: Lattice -> IO String
+putWeights l@(Lattice c' ns') = do
+  (c, ns) <- atomically $ liftM2 (,) (readTVar c') (readTVar ns')
+  ws <- atomically $ filterM (return.isNode) ns >>= mapM (readTVar . weights) 
+  return $! 
+    unlines $
+    map unwords $ 
+    map (map show) $ 
+    ws
+  
