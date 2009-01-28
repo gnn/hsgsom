@@ -16,5 +16,4 @@ Library
   Build-Depends:    base, random, stm
   Exposed-Modules:  Gsom.Input, Gsom.Lattice, Gsom.Node, Gsom.Phase
 --  Other-Modules:    Gsom.Lattice, Gsom.Input
-  Extensions:       ExistentialQuantification
 
