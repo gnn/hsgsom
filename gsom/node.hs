@@ -229,7 +229,7 @@ checkBounds i = let (min',max') = (minimum i, maximum i) in
 -- the child of the new node's parent p in direction d'.
 -- The new weights are then calculated according to the formula:
 --
--- * @nw = p + n - s
+-- * @nw = p + n - s@.
 newWeight :: Node -> Int -> STM ()
 newWeight node d = let 
   w = weights node 
