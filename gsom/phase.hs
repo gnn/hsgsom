@@ -5,8 +5,13 @@
 -- This module contains all the functionality needed to run one or more 
 -- phases of the GSOM algorithm.
 module Gsom.Phase(
-  Phase,
-  phase
+  module Gsom.Input,
+  Gsom.Lattice.newRandom, Gsom.Lattice.newCentered,
+  Gsom.Lattice.putWeights,
+  Phase(..),
+  defaults, 
+  phase,
+  run
 ) where 
 
 ------------------------------------------------------------------------------
@@ -65,6 +70,8 @@ data Phase = Phase {
   spreadFactor  :: Double
 }
 
+type Phases = [Phase]
+
 ------------------------------------------------------------------------------
 -- Running phases
 ------------------------------------------------------------------------------
@@ -89,6 +96,110 @@ phase ps lattice is =
         when (grow ps) (updateError winner i >> vent l winner gT)
         nodeCount <- readTVar (count l)
         return $! (c + 1, l)
+
+-- | Since a complete run of the GSOM algorithm means running a number of 
+-- @'Phases'@ this is usually the main function used.
+-- @run phases lattice inputs@ runs the GSOM algorithm by running the 
+-- @phases@ in the order specified, each time making passes over @inputs@
+-- and using the produced @'Lattice'@ to as an argument to the next phase.
+-- The initial @'Lattice'@, @lattice@ may be constructed with the 
+-- @'newRandom'@ and the @'newCentered'@ functions.
+run :: Phases -> Lattice -> Inputs -> IO Lattice
+run ps lattice is = foldM f lattice ps where
+  f l p = phase p l is
+
+------------------------------------------------------------------------------
+-- Predefined Kernels
+------------------------------------------------------------------------------
+
+bubble, gaussian :: Double -> Int -> Double
+-- | The simplest kernel, which essentially does nothing.
+-- It always evaluates to @1@ thus havin no effect on updating weights.
+bubble _ _ = 1
+
+-- | A gaussian kernel. The neighbourhood size @s@ currently in effect 
+-- controls the bell width while the distance @d@ of the current node 
+-- is used as the actual kernel argument. Thus the formula is:
+--
+-- * @gaussian s d = exp(d^2/(2*s^2))@
+gaussian s d = exp $ fromIntegral d ** 2 / (2 * s**2)
+
+------------------------------------------------------------------------------
+-- Predefined learning rate updating functions
+------------------------------------------------------------------------------
+
+-- | Functions to update the learning rate. Use currying to supply them 
+-- with a starting value and use the resulting function to fill in the 
+-- @'learningRate'@ field of @'Phase'@.  
+
+linear, inverseAge :: Double -> Int -> Int -> Double
+
+-- | The linear learning rate reduction function. If you supply it with 
+-- the initial learning rate @lr@ it uses the following formula where 
+-- @step@ is the current step the phase is in and @steps@ is the overall
+-- number of steps the phase will take:
+--
+-- *@linear lr step steps = lr * (1-step/steps)@
+linear lr step steps = lr * (1 - fromIntegral step / fromIntegral steps)
+
+-- | The inverse time learning rate reduction function. Given an initial
+-- learning rate of @lr@, a maximum number of steps of @steps@ and the 
+-- current step number beeing @step@, the formula is:
+--
+-- *@inverseAge lr step steps = lr * steps / (steps + 100 * step)@
+inverseAge lr step steps = let fI = fromIntegral in 
+  lr * fI steps / (fI steps + 100 * fI step)
+
+------------------------------------------------------------------------------
+-- Predefined phases
+------------------------------------------------------------------------------
+
+-- | The three default phases of the GSOM algorithm. They all use the 
+-- bubble kernel and a linear learning rate decrease.
+defaultFirst, defaultSecond, defaultThird :: Phase
+
+-- | The default first phase is the only growing phase. It makes @5@
+-- passes over the input, uses an initial learning rate of @0.1@ and 
+-- a starting neighbourhood size of @3@. The @'spreadFactor'@ is set
+-- to @0.1@.
+defaultFirst = Phase {
+  passes = 5,
+  neighbourhoodSize = 3,
+  learningRate = linear 0.1,
+  kernel = bubble,
+  grow = True,
+  spreadFactor = 0.1 
+}
+
+-- | The default for the second phase is a smoothing phase making @50@
+-- passes over the input vectors with a learning rate of @0.05@ and an
+-- initial neighbourhood size of @2@. Since there is no node growth the
+-- @'spreadFactor'@ is ignored and thus set to @0@.
+defaultSecond = Phase {
+  passes = 50,
+  neighbourhoodSize = 2,
+  learningRate = linear 0.05,
+  kernel = bubble,
+  grow = False,
+  spreadFactor = 0 
+}
+
+-- | The default for the third and last phase is a smoothing phase making 
+-- @50@ passes over the input vectors with a learning rate of @0.01@ and 
+-- an initial neighbourhood size of @1@. Since there is no node growth the
+-- @'spreadFactor'@ is ignored and thus set to @0@.
+defaultThird = Phase {
+  passes = 50,
+  neighbourhoodSize = 1,
+  learningRate = linear 0.01,
+  kernel = bubble,
+  grow = False,
+  spreadFactor = 0 
+}
+
+-- | This is the list of the three default phases of the GSOM algorithm.
+defaults :: Phases
+defaults = [defaultFirst, defaultSecond, defaultThird]
 
 ------------------------------------------------------------------------------
 -- Internal functions
