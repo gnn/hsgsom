@@ -17,3 +17,9 @@ Library
   Exposed-Modules:  Gsom.Input, Gsom.Lattice, Gsom.Node, Gsom.Phase
 --  Other-Modules:    Gsom.Lattice, Gsom.Input
 
+Executable          unit-square
+  Main-is:          unit-square.lhs
+  Hs-Source-Dirs:   ., mains
+  Other-Modules:    Gsom.Lattice, Gsom.Node, Gsom.Phase
+  Ghc-Options:      -O3
+
