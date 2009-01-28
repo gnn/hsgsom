@@ -242,10 +242,11 @@ newWeight node d = let
       ws <- readTVar $ weights sibling 
       writeTVar w $ 2 .* wp <+> ws
     else do
+      let lr = [left d, right d]
       candidates <- mapM readTVar $ (map (ns !!)) [left d, right d]
       let d' = fromJust $ findIndex isNode candidates
-      wn <- readTVar (ns !! d') >>= readTVar . weights
-      ws <- readTVar (neighbours parent !! d') >>= readTVar . weights
+      wn <- readTVar . weights $ candidates !! d'
+      ws <- readTVar (neighbours parent !! (lr !! d') ) >>= readTVar . weights
       writeTVar w $ wp <+> wn <-> ws
      
 -- | Used to modify the fields of a node with.
