@@ -13,8 +13,12 @@ Description:
   See <http://en.wikipedia.org/wiki/GSOM> for an explanation of the algorithm.
 
 Library
-  Build-Depends:    base, random, stm
-  Exposed-Modules:  Gsom.Input, Gsom.Lattice, Gsom.Node, Gsom.Phase
+  Build-Depends:    base, containers, random, stm
+  Exposed-Modules:  Gsom.Node.Coordinates,
+                    Gsom.Input, 
+                    Gsom.Lattice, 
+                    Gsom.Node, 
+                    Gsom.Phase
 --  Other-Modules:    Gsom.Lattice, Gsom.Input
 
 Executable          unit-square
