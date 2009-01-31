@@ -1,7 +1,12 @@
 -- | This module contains everything concerning the lattice which is build
 -- by gsom.
 
-module Gsom.Lattice where 
+module Gsom.Lattice(
+  Lattice,
+  newCentered, newRandom, 
+  bmu, grow, vent,
+  nodes, 
+  putLattice, putWeights) where 
 
 ------------------------------------------------------------------------------
 -- Standard modules
