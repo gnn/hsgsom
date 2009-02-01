@@ -52,5 +52,5 @@ And one function to format a list of inputs so that we can just dump it into
 a file and load plot it with gnuplot.
 
 > dumpInputs :: Inputs -> String
-> dumpInputs = unlines . map unwords . map (map show)
+> dumpInputs = unlines . map (unwords . map show)
 

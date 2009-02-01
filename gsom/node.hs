@@ -248,7 +248,7 @@ newWeight node d = let
         "              this, you've found a bug. Please contact the \n" ++
         "              maintainer.")
       let lr = [left d, right d]
-      candidates <- mapM readTVar $ (map (ns !!)) [left d, right d]
+      candidates <- mapM readTVar $ map (ns !!) [left d, right d]
       let d' = fromJust $ findIndex isNode candidates
       wn <- readTVar . weights $ candidates !! d'
       ws <- readTVar (neighbours parent !! (lr !! d') ) >>= readTVar . weights

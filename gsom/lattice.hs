@@ -161,7 +161,6 @@ putWeights l@(Lattice c' ns') = do
   ws <- atomically $ filterM (return.isNode) ns >>= mapM (readTVar . weights) 
   return $! 
     unlines $
-    map unwords $ 
-    map (map show) $ 
+    map (unwords . map show) 
     ws
   
