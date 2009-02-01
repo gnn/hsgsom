@@ -199,7 +199,7 @@ unwrappedNeighbours = mapM readTVar . neighbours
 --
 -- * invert i = (i+n/2) `mod` n
 invert, left, right :: Int -> Int
-invert i = (i+2) `mod` 4
+invert i = (i+3) `mod` 6
 
 -- | @'left' direction@ returns the index which points to the left of 
 -- @direction@.
@@ -242,6 +242,11 @@ newWeight node d = let
       ws <- readTVar $ weights sibling 
       writeTVar w $ 2 .* wp <+> ws
     else do
+      stop <- return $! error (
+        "in newWeight: since the decision to only support hexagonal\n" ++
+        "              this code path is presumed dead. If you see \n" ++
+        "              this, you've found a bug. Please contact the \n" ++
+        "              maintainer.")
       let lr = [left d, right d]
       candidates <- mapM readTVar $ (map (ns !!)) [left d, right d]
       let d' = fromJust $ findIndex isNode candidates
