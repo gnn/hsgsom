@@ -40,13 +40,12 @@ Our main function just runs the gsom algorithm with the defaults.
 
 > main = do
 >   g <- getStdGen
->   let is = grid 100
->   writeFile "_T1_" $ dumpInputs is
+>   let is = grid 1000
+>   writeFile "_T_" $ dumpInputs is
 >   lattice <- newCentered (dimension is)
 >   result <- run defaults lattice is
->   resultWs <- atomically $ readTVar (nodes result) >>= 
->     mapM (readTVar . weights)
->   writeFile "_T2_" $ dumpInputs resultWs
+>   appendFile "_T_" "\n\n"
+>   putWeights result >>= appendFile "_T_"
 
 And one function to format a list of inputs so that we can just dump it into 
 a file and load plot it with gnuplot.
