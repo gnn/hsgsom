@@ -274,5 +274,5 @@ putNode node = atomically $ do
   w <- liftM (("weights: " ++ ) . show) (readTVar $ weights node)
   ns <- liftM (show . map iD . filter isNode) 
               (mapM readTVar (neighbours node))
-  return $ "Node:" : map ("  " ++) [id, e, w, ns]
+  return $! "Node:" : map ("  " ++) [l, e, w, ns]
 
