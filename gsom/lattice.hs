@@ -90,8 +90,8 @@ bmu i l = atomically (readTVar $ nodes l) >>= (\l' ->
     [] -> error "error in bmu: empty lattices shouldn't occur."
     (x:xs) -> 
       foldM (\n1 n2 -> atomically $ do
-        w1 <- readTVar $ weights n1
-        w2 <- readTVar $ weights n2
+        w1 <- ws n1
+        w2 <- ws n2
         return $! if distance i w1 <= distance i w2 
           then n1 else n2) 
       x xs
