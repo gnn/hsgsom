@@ -254,7 +254,10 @@ newWeight node d = let
       ws <- readTVar (neighbours parent !! (lr !! d') ) >>= readTVar . weights
       writeTVar w $ wp <+> wn <-> ws
      
--- | Used to modify the fields of a node with.
+-- | Used to modify the fields of a node.
+-- @modify node field f@ modifies @node@ by using @field@ to select 
+-- the appropriate value, applying @f@ to the value and storing the
+-- result in the field.
 modify :: Node -> (Node -> TVar a) -> (a -> a) -> STM ()
 modify node selector modification = let var = selector node in
   readTVar var >>= writeTVar var . modification
