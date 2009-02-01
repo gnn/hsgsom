@@ -93,9 +93,10 @@ phase ps lattice is =
       atomically $ do
         affected <- neighbourhood winner $ round (r c)
         mapM_ (update i (lR c) (kernel ps $ r c)) affected 
-        when (grow ps) (updateError winner i >> vent l winner gT)
-        nodeCount <- readTVar (count l)
-        return $! (c + 1, l)
+        newLattice <- if grow ps
+          then updateError winner i >> vent l winner gT
+          else return $! l
+        return $! (c + 1, newLattice)
 
 -- | Since a complete run of the GSOM algorithm means running a number of 
 -- @'Phases'@ this is usually the main function used.

@@ -12,13 +12,17 @@ module Gsom.Lattice(
 -- Standard modules
 ------------------------------------------------------------------------------
 
-import Data.List hiding (insert)
+import Data.List
+import Data.Map(Map(..))
+import qualified Data.Map as Map
+import Data.Maybe
 import System.Random
 
 ------------------------------------------------------------------------------
 -- Private modules
 ------------------------------------------------------------------------------
 
+import Gsom.Node.Coordinates
 import Gsom.Input
 import Gsom.Node
 
@@ -26,16 +30,9 @@ import Gsom.Node
 -- The Lattice type
 ------------------------------------------------------------------------------
 
--- | The lattice type. It has two fields:
-data Lattice = Lattice {
-  -- | The number of current nodes. Is tracked in a TVar for efficiency 
-  -- reasons and so that unique node ids can be created thread safe.
-  count :: TVar Int
-, -- | The list of nodes. it is also tracked in a TVar so that new nodes can 
-  -- be inserted in a thread safe manner. 
-  -- In addidion every node should be reachable from every other node. 
-  nodes :: TVar Nodes
-}
+-- | The lattice type. Since global access to nodes is needed they're 
+-- stored in a 'Data.Map' indexed by their coordinates.
+type Lattice = Map Coordinates (TVar Node)
 
 ------------------------------------------------------------------------------
 -- Creation
@@ -56,36 +53,18 @@ newRandom g dimension = let
 newCentered :: Int -> IO Lattice
 newCentered = new (cycle [cycle [0.5]])
 
--- | Generates a new @'Lattice'@ given the supply of @weights@ with each node
--- having a weight vector of the given @dimension@.
--- Internal. (Not exportet.)
-new :: Inputs -> Int -> IO Lattice
-new ws dimension = let 
-  ids = [0..3]
-  weights = [ map (take dimension) ws !! n | n <- ids ] in atomically $ do
-  -- create the TVars for the initial nodes
-  nodes <- sequence $ replicate 4 (newTVar Leaf)
-  neighbours <- mapM (mapM (\n -> if n < 0 
-    then newTVar Leaf 
-    else return $ nodes!!n))
-    [ [-1, -1, 1, 3] 
-    , [0, -1, -1, 2] 
-    , [3, 1, -1, -1] 
-    , [-1, 0, 2, -1] ]
-  sequence (zipWith3 node ids weights neighbours) >>= 
-    zipWithM_ writeTVar nodes
-  count' <- newTVar 4
-  nodes' <- mapM readTVar nodes >>= newTVar
-  return $ Lattice count' nodes'
-
 ------------------------------------------------------------------------------
 -- Reading
 ------------------------------------------------------------------------------
 
+-- | Returns the nodes stored in lattice.
+nodes :: Lattice -> STM Nodes
+nodes = mapM readTVar . Map.elems
+
 -- | @'bmu' input lattice@ returns the best matching unit i.e. the node with
 -- minimal distance to the given input vector.
 bmu :: Input -> Lattice -> IO Node
-bmu i l = atomically (readTVar $ nodes l) >>= (\l' -> 
+bmu i l = liftM (filter isNode) (atomically (nodes l)) >>= (\l' -> 
   let ws = readTVar.weights in case l' of
     [] -> error "error in bmu: empty lattices shouldn't occur."
     (x:xs) -> 
@@ -101,29 +80,40 @@ bmu i l = atomically (readTVar $ nodes l) >>= (\l' ->
 -- Manipulating
 ------------------------------------------------------------------------------
 
--- | Inserts a node into the lattice and returns the new lattice
-
-insert :: Lattice -> Node -> STM Lattice
-insert l@(Lattice c' ns') n = do
-  c <- readTVar c'
-  ns <- readTVar ns'
-  writeTVar c' (c+1)
-  writeTVar ns' (n:ns)
-  return $! l
-
 -- | @'grow' lattice node@ will create new neighbours for every Leaf 
 -- neighbour of the given @node@ and add the created nodes to @lattice@.
--- It will return the list of spawned nodes. 
-grow :: Lattice -> Node -> STM Nodes
+-- It will return the list of spawned nodes and the new lattice containing
+-- every node created in the process of spawning. 
+grow :: Lattice -> Node -> STM (Lattice, Nodes)
 grow lattice node = do
-  ns <- unwrappedNeighbours node
-  let holes = findIndices isLeaf ns
-  newId <- readTVar $ count lattice
-  foldM (spawnAndInsert node newId) [] holes where
-    spawnAndInsert parent newId spawned direction = do
-      node' <- spawn (newId + length spawned) parent direction
-      insert lattice node'
-      return $! node' : spawned
+  holes <- liftM (findIndices isLeaf) (unwrappedNeighbours node)
+  newLattice <- foldM (flip spawn node) lattice holes 
+  spawned <- unwrappedNeighbours node >>= (\ns -> return $! map (ns !!) holes)
+  return $! (newLattice, spawned)
+
+-- | Used to spawn only a particular node. Returns the new lattice 
+-- containing the spawned node.
+-- @'spawn' lattice parent direction@ will create a new node as a 
+-- neighbour of @parent@ at index @direction@, making @parent@ the neighbour 
+-- of the new node at index @invert direction@ with the new node having an.
+spawn :: Lattice -> Node -> Int -> STM Lattice
+spawn _  Leaf _ = error "in spawn: spawn called with a Leaf parent."
+spawn lattice parent direction = let 
+  spawnCoordinates = neighbour (location parent) direction 
+  nCs = neighbourCoordinates spawnCoordinates in do
+  -- firs we have to check whether there are already some TVars existing
+  -- at the locations of the neighbours of the new node and create those
+  -- don't exist yet.
+  newLattice <- foldM (\m k -> if not $ Map.member k m
+      then newTVar Leaf >>= (\v -> return $! Map.insert k v m)
+      else return $! m) lattice nCs
+  -- after creating all the necessary neighbours we can get create the new 
+  -- node with it's neighbours and calculate it's new weight vector
+  let ns = specificElements newLattice nCs
+  result <- node (neighbour (location parent) direction) [] ns
+  writeTVar (fromJust $ Map.lookup spawnCoordinates lattice) result
+  newWeight result direction
+  return $! newLattice
 
 -- | @'vent' lattice node growthThreshold@ will check the accumulated error 
 -- of the @node@ against the given @growthThreshol@ and will do nothing if 
@@ -132,33 +122,65 @@ grow lattice node = do
 -- neighbours, depending on whether the node is a boundary node or not.
 -- If new nodes are spawned they will added to @lattice@.
 
-vent :: Lattice -> Node -> Double -> STM ()
+vent :: Lattice -> Node -> Double -> STM Lattice
 vent _ Leaf _  = error "in vent: vent called with a Leaf as argument."
 vent lattice node gt = do 
   qE <- readTVar $ quantizationError node
-  when (qE > gt) $ do 
+  if qE > gt then do 
     ns <- unwrappedNeighbours node
     let leaves = findIndices isLeaf ns
-    affected <- if (null leaves)
-      then neighbourhood node 1 >>= mapM (return . snd)
+    (newLattice, affected) <- if null leaves
+      then liftM ((,) lattice) (neighbourhood node 1 >>= mapM (return . snd))
       else grow lattice node
     propagate node affected
+    return $! newLattice
+    else return $! lattice
+------------------------------------------------------------------------------
+-- Internal
+------------------------------------------------------------------------------
+
+-- | Generates a new @'Lattice'@ given the supply of @weights@ with each node
+-- having a weight vector of the given @dimension@.
+new :: Inputs -> Int -> IO Lattice
+new ws dimension = let 
+  origin = (0,0)
+  nodeCoordinates = origin : neighbourCoordinates origin
+  leafCoordinates = 
+    nub (concatMap neighbourCoordinates nodeCoordinates) \\ nodeCoordinates 
+  in atomically $ do
+  -- create a map with the TVars for the initial nodes
+  lattice <- foldM (\m k -> do
+    v <- newTVar Leaf
+    return $! Map.insert k v m) Map.empty (nodeCoordinates ++ leafCoordinates)
+  -- now that we have all the nodes we need to create the actual non leaf
+  -- nodes present in the starting map and write them into the corresoonding
+  -- TVars.
+  let nodeTVars = specificElements lattice nodeCoordinates
+  nodes <- sequence $ zipWith3 node 
+    nodeCoordinates 
+    (map (take dimension) ws)
+    (map (specificElements lattice . neighbourCoordinates) nodeCoordinates)
+  zipWithM_ writeTVar nodeTVars nodes
+  return $! lattice
+
+specificElements :: Ord k => Map k a -> [k] -> [a]
+specificElements m = map (fromJust . flip Map.lookup m)
 
 ------------------------------------------------------------------------------
 -- Output
 ------------------------------------------------------------------------------
 
 putLattice :: Lattice -> IO String
-putLattice l@(Lattice c' ns') = do
-  (c, ns) <- atomically $ liftM2 (,) (readTVar c') (readTVar ns')
-  ns <- liftM concat $ mapM putNode ns
-  return $ unlines ("Lattice: " : ("  Count: " ++ show c) : 
+putLattice lattice = do
+  ns <- atomically (nodes lattice) >>= liftM concat . mapM putNode
+  return $ unlines ("Lattice: " : ("  Count: " ++ show (Map.size lattice)) : 
     map ("    " ++ ) ns)
 
 putWeights :: Lattice -> IO String
-putWeights l@(Lattice c' ns') = do
-  (c, ns) <- atomically $ liftM2 (,) (readTVar c') (readTVar ns')
-  ws <- atomically $ filterM (return.isNode) ns >>= mapM (readTVar . weights) 
+putWeights lattice = do
+  ws <- atomically $ nodes lattice >>= 
+    filterM (return.isNode) >>= 
+    mapM (readTVar . weights) 
   return $! 
     unlines $
     map (unwords . map show) 

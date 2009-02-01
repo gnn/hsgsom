@@ -8,7 +8,7 @@ module Gsom.Node(
     module Control.Concurrent.STM
   , module Control.Monad
   , Neighbours, Node(..), Nodes
-  , isLeaf, isNode, neighbourhood, node, propagate, putNode, spawn
+  , isLeaf, isNode, neighbourhood, newWeight, node, propagate, putNode
   , unwrappedNeighbours, update, updateError) where 
 
 
@@ -26,6 +26,7 @@ import Data.Maybe
 -- Private modules
 ------------------------------------------------------------------------------
 
+import Gsom.Node.Coordinates
 import Gsom.Input(Input, distance, (<+>), (<->), (.*)) 
 
 ------------------------------------------------------------------------------
@@ -39,11 +40,11 @@ data Node =
   -- |  or they are actual nodes with a few associated values and a list of 
   -- neighbouring nodes.
   Node { 
-  -- | Used to uniquely identify nodes. For new nodes this should be set to
-  -- the current size of the gsom+1 to ensure that @'iD'@ is unique. 
-  -- Since @'iD'@ also shouldn't change after the node is created it is not 
-  -- stored in a @'TVar'@.
-  iD :: Int
+  -- | Used to uniquely identify nodes. This is also the actual location of 
+  -- the node if the lattice it belongs to is beeing laid out in the two
+  -- dimensional plane and it is used to store the node in the map 
+  -- comprising the lattice. 
+  location :: Coordinates
   , -- | The quantization error the node has accumulated so far.
   quantizationError :: TVar Double
   , -- | The node's weight vector. This is the center of the voronoi cell the 
@@ -55,7 +56,7 @@ type Nodes = [Node]
 
 instance Eq Node where
   Leaf == Leaf = True 
-  Node{iD = id1} == Node{iD = id2} = id1 == id2
+  Node{location = p1} == Node{location = p2} = p1 == p2
   _ == _ = False
 
 -- | A node's neighbours are stored in fields of type @Neighbours@.
@@ -75,11 +76,11 @@ type Neighbourhood = [(Int, Node)]
 
 -- | @'node' id weights neighbours@ creates a node with the specified 
 -- parameters and initial quantization error of @0@.
-node :: Int -> Input -> Neighbours -> STM Node
-node iD weights neighbours = do
+node :: Coordinates -> Input -> Neighbours -> STM Node
+node location weights neighbours = do
   wrappedWeights <- newTVar weights
   initialError <- newTVar 0
-  return $! Node iD initialError wrappedWeights neighbours
+  return $! Node location initialError wrappedWeights neighbours
 
 ------------------------------------------------------------------------------
 -- Modifying nodes
@@ -101,41 +102,6 @@ updateError n i = let qE = quantizationError n in do
   old <- readTVar qE
   w <- readTVar $ weights n
   writeTVar qE (old + distance w i)
-
--- | Used to spawn only a particular node. Returns the spawned node.
--- @'spawn' parent id direction@ will create a new node as a 
--- neighbour of @parent@ at index @direction@, making @parent@ the neighbour 
--- of the new node at index @invert direction@ with the new node having an 
--- @'iD'@ of @id@.
-spawn :: Int -> Node -> Int -> STM Node
-spawn id parent direction = do
-  -- find an existing sibling. He is just used to get the TVar the parent is 
-  -- stored in, so we can put this TVar in the neighbour list. 
-  uWs <- unwrappedNeighbours parent
-  let siblingIndex = fromJust $ findIndex isNode uWs
-  sibling <- readTVar (neighbours parent !! siblingIndex)
-  let back = (invert direction, neighbours sibling !! invert siblingIndex)
-  -- generate the new forward neighbour. It should NEVER exist prior to 
-  -- spawning a node.
-  forward <- liftM2 (,) (return direction) (newTVar Leaf)
-  -- fetch the left and right neighbours or create new leaves if they don't 
-  -- exist.
-  leftright <- mapM get [left, right]
-  let 
-    ns = map snd $ sortBy
-      (\p1 p2 -> compare (fst p1) (fst p2)) (forward : back : leftright)
-  result <- node id [] ns
-  writeTVar (neighbours parent !! direction) result
-  newWeight result direction
-  return result
-    where 
-      -- the get function takes a direction and returns the neighbour in that 
-      -- direction if it exists or a new TVar Leaf otherwise
-      get f = let newDirection = f direction in do 
-        sibling <- readTVar (neighbours parent !! newDirection)
-        liftM2 (,) (return newDirection) $ if isLeaf sibling
-          then newTVar Leaf
-          else return (neighbours sibling !! direction)
 
 -- | @'propagate' node@ propagates the accumulated error of the given @node@ 
 -- to it's neighbours.
@@ -269,10 +235,10 @@ modify node selector modification = let var = selector node in
 putNode :: Node -> IO [String]
 putNode Leaf = return ["Leaf"]
 putNode node = atomically $ do
-  let id = "iD : " ++ show (iD node)
+  let l = "location : " ++ show (location node)
   e <- liftM (("error : " ++) . show) (readTVar $ quantizationError node) 
   w <- liftM (("weights: " ++ ) . show) (readTVar $ weights node)
-  ns <- liftM (show . map iD . filter isNode) 
+  ns <- liftM (show . map location . filter isNode) 
               (mapM readTVar (neighbours node))
   return $! "Node:" : map ("  " ++) [l, e, w, ns]
 
