@@ -70,7 +70,7 @@ distance i1 = sqrt . sum . zipWith (\a b -> (a - b)**2) i1
 -- | Multiplication of an input vector with a scalar.
 infixr 7 .* 
 (.*) :: Double -> Input -> Input
-(.*) d = map $ \x -> d*x
+(.*) d = (force . map ((d*) $!) $!)
 
 infixl 7 *.
 (*.) :: Input -> Double -> Input

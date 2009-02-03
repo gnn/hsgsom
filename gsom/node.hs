@@ -226,7 +226,7 @@ newWeight node d = let
 -- result in the field.
 modify :: Node -> (Node -> TVar a) -> (a -> a) -> STM ()
 modify node selector modification = let var = selector node in
-  readTVar var >>= writeTVar var . modification
+  readTVar var >>= (writeTVar var $!) . (modification $!)
 
 ------------------------------------------------------------------------------
 -- Output
