@@ -13,7 +13,7 @@ Description:
   See <http://en.wikipedia.org/wiki/GSOM> for an explanation of the algorithm.
 
 Library
-  Build-Depends:    base, containers, random, stm
+  Build-Depends:    base, containers, random, time, stm
   Exposed-Modules:  Gsom.Node.Coordinates,
                     Gsom.Input, 
                     Gsom.Lattice, 

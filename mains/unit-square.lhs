@@ -12,6 +12,7 @@ way.
 > import Control.Concurrent.STM
 > import Data.List
 > import Data.Ratio
+> import Data.Time.Clock.POSIX
 > import System.IO
 > import System.Random
 
@@ -39,13 +40,13 @@ a function to get points in the unit square which form a regular grid.
 Our main function just runs the gsom algorithm with the defaults.
 
 > main = do
+>   stamp <- liftM show getPOSIXTime 
 >   g <- getStdGen
->   let is = grid 1000
->   writeFile "_T_" $ dumpInputs is
+>   let is = grid 500
+>   writeFile ("data/" ++ stamp ++ ".is") $ dumpInputs is
 >   lattice <- newCentered (dimension is)
 >   result <- run defaults lattice is
->   appendFile "_T_" "\n\n"
->   putWeights result >>= appendFile "_T_"
+>   putWeights result >>= writeFile ("data/" ++ stamp ++ ".os")
 
 And one function to format a list of inputs so that we can just dump it into 
 a file and load plot it with gnuplot.
