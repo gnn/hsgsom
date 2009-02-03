@@ -91,7 +91,7 @@ node location weights neighbours = do
 --
 -- * @\weight -> weight + learning_rate * (kernel d) (input - weight)@
 update :: Input -> Double -> (Int -> Double) -> (Int, Node) -> STM ()
-update input lr k (d,n) = modify n weights adjust where 
+update input lr k (d,n) = modify n weights adjust where
     adjust w = w <+> (lr * k d) .* (input <-> w)
 
 -- | @updateError node input@ updates the @'quantizationError'@ of @node@.
