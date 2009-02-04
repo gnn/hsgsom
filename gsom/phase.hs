@@ -18,6 +18,7 @@ module Gsom.Phase(
 -- Standard modules
 ------------------------------------------------------------------------------
 
+import Data.List
 
 ------------------------------------------------------------------------------
 -- Private Modules
@@ -81,11 +82,12 @@ type Phases = [Phase]
 -- and @parameters@.
 phase :: Phase -> Lattice -> Inputs -> IO Lattice
 phase ps lattice is =
-  liftM snd $ foldM consume (0, lattice) supply where 
-    supply = passes ps `times` is
+  liftM snd $ 
+  foldl' (>>=) (return (0, lattice)) (replicate (passes ps) pass) where 
+    pass state = foldM consume state is
     gT = growthThreshold ps $ dimension is
     lR x = learningRate ps x steps
-    steps = length supply
+    steps = passes ps * length is
     fI = fromIntegral
     r x = ((1 - fI x / fI steps ) * fI (neighbourhoodSize ps)) :: Double
     consume (c, l) i = do
@@ -212,8 +214,3 @@ growthThreshold :: Phase -> Int -> Double
 growthThreshold ps d = 
   negate $ sqrt (fromIntegral d) * log (spreadFactor ps)
 
--- | @n `times` l@ returns @l@ repeated @n@ times.
--- @l@ has to be finite and because the length of @l@ is calculated
--- in the process.
-times :: Int -> [a] -> [a]
-n `times` l = take (n * length l) (cycle l)
