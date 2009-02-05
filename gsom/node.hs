@@ -103,7 +103,7 @@ updateError n i = let qE = quantizationError in
 
 -- | @'propagate' node@ propagates the accumulated error of the given @node@ 
 -- to it's neighbours.
-propagate :: Node -> Nodes -> STM()
+propagate :: Node -> Nodes -> STM ()
 propagate node affected = do
   let factor = fromIntegral $ length affected
   error <- readTVar $ quantizationError node
