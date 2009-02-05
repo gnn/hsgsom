@@ -97,11 +97,9 @@ update input lr k (d,n) = modify n weights adjust where
 -- | @updateError node input@ updates the @'quantizationError'@ of @node@.
 -- The new error is just the old error plus the distance of the @node@'s 
 -- weight vector from @input@.
-updateError :: Node -> Input -> STM()
-updateError n i = let qE = quantizationError n in do
-  old <- readTVar qE
-  w <- readTVar $ weights n
-  writeTVar qE (old + distance w i)
+updateError :: Node -> Input -> STM ()
+updateError n i = let qE = quantizationError in
+ readTVar (weights n) >>= modify n qE . (+) . distance i
 
 -- | @'propagate' node@ propagates the accumulated error of the given @node@ 
 -- to it's neighbours.
