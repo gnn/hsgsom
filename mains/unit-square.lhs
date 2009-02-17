@@ -20,13 +20,28 @@ way.
 > import Gsom.Node
 > import Gsom.Phase
 
+We will need a helper function to generate a supply of independent random 
+number generators from a single one.
+
+> gs :: RandomGen g => g -> [g]
+> gs g = let (g', gn) = split g in g' : gs gn
+
 First a few random points distributed uniformly in the unit square.
 
 > randomSquare :: RandomGen g => g -> Int -> Inputs
-> randomSquare g n = let 
->   (gx, gy) = split g 
->   f = randomRs (0,1) in
->   take (n^2) $ zipWith (\x y -> [x,y]) (f gx) (f gy)
+> randomSquare g n = let f = randomRs (0,1) in
+>   take (n^2) $ zipWith (\x y -> [x,y]) (f $ gs g !! 0) (f $ gs g !! 1)
+
+And then a few random points distributed uniformly in the unit cube.
+
+> randomCube :: RandomGen g => g -> Int -> Inputs
+> randomCube g n = let 
+>   f = randomRs (0,1) 
+>   rs = gs g in
+>   take n $ zipWith3 (\x y z -> [x,y,z]) 
+>     (f $ rs !! 0) 
+>     (f $ rs !! 1) 
+>     (f $ rs !! 2)
 
 Since we have random points, we also want nonrandom points, so here's
 a function to get points in the unit square which form a regular grid.
@@ -42,7 +57,7 @@ Our main function just runs the gsom algorithm with the defaults.
 > main = do
 >   stamp <- liftM show getPOSIXTime 
 >   g <- getStdGen
->   let is = grid 500
+>   let is = randomCube g 100000
 >   writeFile ("data/" ++ stamp ++ ".is") $ dumpInputs is
 >   lattice <- newCentered (dimension is)
 >   result <- run defaults lattice is
