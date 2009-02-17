@@ -20,8 +20,7 @@ Library
                     Data.Datamining.Clustering.Gsom.Node, 
                     Data.Datamining.Clustering.Gsom.Phase
 
-
---  Other-Modules:    Gsom.Lattice, Gsom.Input
+  GHC-Options:     -O2 -fvia-C -optc-O3
 
 Executable          unit-square
   Main-is:          unit-square.lhs
@@ -30,5 +29,5 @@ Executable          unit-square
                     Data.Datamining.Clustering.Gsom.Node, 
                     Data.Datamining.Clustering.Gsom.Phase
 
-  Ghc-Options:      -O3
+  GHC-Options:     -O2 -fvia-C -optc-O3
 
