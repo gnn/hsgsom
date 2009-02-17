@@ -26,7 +26,7 @@ import Data.Maybe
 -- Private modules
 ------------------------------------------------------------------------------
 
-import Data.Datamining.Clustering.Gsom.Node.Coordinates
+import Data.Datamining.Clustering.Gsom.Coordinates
 import Data.Datamining.Clustering.Gsom.Input(
   Input, distance, (<+>), (<->), (.*)) 
 

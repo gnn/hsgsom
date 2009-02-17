@@ -4,7 +4,7 @@
 -- to translate walking from one node into a certain direction 
 -- to walking from one coordinate to another all this functionality
 -- will be put into this module.
-module Data.Datamining.Clustering.Gsom.Node.Coordinates where
+module Data.Datamining.Clustering.Gsom.Coordinates where
 
 type Coordinates = (Int, Int)
 
