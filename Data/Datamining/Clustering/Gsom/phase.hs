@@ -4,10 +4,11 @@
 -- according to a certain set of specified parameters.
 -- This module contains all the functionality needed to run one or more 
 -- phases of the GSOM algorithm.
-module Gsom.Phase(
-  module Gsom.Input,
-  Gsom.Lattice.newRandom, Gsom.Lattice.newCentered,
-  Gsom.Lattice.putWeights,
+module Data.Datamining.Clustering.Gsom.Phase(
+  module Data.Datamining.Clustering.Gsom.Input,
+  Data.Datamining.Clustering.Gsom.Lattice.newRandom, 
+  Data.Datamining.Clustering.Gsom.Lattice.newCentered,
+  Data.Datamining.Clustering.Gsom.Lattice.putWeights,
   Phase(..),
   defaults, 
   phase,
@@ -24,9 +25,9 @@ import Data.List
 -- Private Modules
 ------------------------------------------------------------------------------
 
-import Gsom.Input
-import Gsom.Lattice hiding (grow)
-import Gsom.Node
+import Data.Datamining.Clustering.Gsom.Input
+import Data.Datamining.Clustering.Gsom.Lattice hiding (grow)
+import Data.Datamining.Clustering.Gsom.Node
 
 ------------------------------------------------------------------------------
 -- Types

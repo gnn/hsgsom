@@ -16,9 +16,9 @@ way.
 > import System.IO
 > import System.Random
 
-> import Gsom.Lattice
-> import Gsom.Node
-> import Gsom.Phase
+> import Data.Datamining.Clustering.Gsom.Lattice
+> import Data.Datamining.Clustering.Gsom.Node
+> import Data.Datamining.Clustering.Gsom.Phase
 
 We will need a helper function to generate a supply of independent random 
 number generators from a single one.

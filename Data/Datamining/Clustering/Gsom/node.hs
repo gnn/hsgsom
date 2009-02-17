@@ -4,7 +4,7 @@
 -- inside a gsom and transacton granularity should be controlled on a 
 -- higher level.
 
-module Gsom.Node(
+module Data.Datamining.Clustering.Gsom.Node(
     module Control.Concurrent.STM
   , module Control.Monad
   , Neighbours, Node(..), Nodes
@@ -26,8 +26,9 @@ import Data.Maybe
 -- Private modules
 ------------------------------------------------------------------------------
 
-import Gsom.Node.Coordinates
-import Gsom.Input(Input, distance, (<+>), (<->), (.*)) 
+import Data.Datamining.Clustering.Gsom.Node.Coordinates
+import Data.Datamining.Clustering.Gsom.Input(
+  Input, distance, (<+>), (<->), (.*)) 
 
 ------------------------------------------------------------------------------
 -- Types

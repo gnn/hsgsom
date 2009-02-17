@@ -1,6 +1,6 @@
 -- |This module contains everything concerning the input to gsom.
 
-module Gsom.Input(
+module Data.Datamining.Clustering.Gsom.Input(
   Bounds, Input, Inputs
 , bounds, dimension, normalize, unnormalize
 , distance, (*.), (.*), (<+>), (<->)

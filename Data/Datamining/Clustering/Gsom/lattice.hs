@@ -1,7 +1,7 @@
 -- | This module contains everything concerning the lattice which is build
 -- by gsom.
 
-module Gsom.Lattice(
+module Data.Datamining.Clustering.Gsom.Lattice(
   Lattice,
   newCentered, newRandom, 
   bmu, grow, vent,
@@ -22,9 +22,9 @@ import System.Random
 -- Private modules
 ------------------------------------------------------------------------------
 
-import Gsom.Node.Coordinates
-import Gsom.Input
-import Gsom.Node
+import Data.Datamining.Clustering.Gsom.Node.Coordinates
+import Data.Datamining.Clustering.Gsom.Input
+import Data.Datamining.Clustering.Gsom.Node
 
 ------------------------------------------------------------------------------
 -- The Lattice type

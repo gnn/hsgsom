@@ -14,16 +14,21 @@ Description:
 
 Library
   Build-Depends:    base, containers, random, time, stm
-  Exposed-Modules:  Gsom.Node.Coordinates,
-                    Gsom.Input, 
-                    Gsom.Lattice, 
-                    Gsom.Node, 
-                    Gsom.Phase
+  Exposed-Modules:  Data.Datamining.Clustering.Gsom.Node.Coordinates,
+                    Data.Datamining.Clustering.Gsom.Input, 
+                    Data.Datamining.Clustering.Gsom.Lattice, 
+                    Data.Datamining.Clustering.Gsom.Node, 
+                    Data.Datamining.Clustering.Gsom.Phase
+
+
 --  Other-Modules:    Gsom.Lattice, Gsom.Input
 
 Executable          unit-square
   Main-is:          unit-square.lhs
   Hs-Source-Dirs:   ., mains
-  Other-Modules:    Gsom.Lattice, Gsom.Node, Gsom.Phase
+  Other-Modules:    Data.Datamining.Clustering.Gsom.Lattice, 
+                    Data.Datamining.Clustering.Gsom.Node, 
+                    Data.Datamining.Clustering.Gsom.Phase
+
   Ghc-Options:      -O3
 
