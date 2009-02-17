@@ -65,7 +65,7 @@ dimension = maximum . map length
 -- @i1@ and @i2@. If @i1@ and @i2@ have different lengths, excess 
 -- values are ignored.
 distance :: Input -> Input -> Double
-distance i1 = sqrt . sum . zipWith (\a b -> (a - b)**2) i1
+distance i1 i2 = sqrt . sum . map (\x -> x*x) $! (i1 <-> i2)
 
 -- | Multiplication of an input vector with a scalar.
 infixr 7 .* 
