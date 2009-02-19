@@ -28,7 +28,8 @@ Description:
 
 Library
   Build-Depends:    base, containers, random, time, stm
-  Exposed-Modules:  Data.Datamining.Clustering.Gsom.Coordinates,
+  Exposed-Modules:  Data.Datamining.Clustering.Gsom,
+                    Data.Datamining.Clustering.Gsom.Coordinates,
                     Data.Datamining.Clustering.Gsom.Input, 
                     Data.Datamining.Clustering.Gsom.Lattice, 
                     Data.Datamining.Clustering.Gsom.Node, 
