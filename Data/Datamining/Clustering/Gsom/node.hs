@@ -34,8 +34,7 @@ import Data.Maybe
 ------------------------------------------------------------------------------
 
 import Data.Datamining.Clustering.Gsom.Coordinates
-import Data.Datamining.Clustering.Gsom.Input(
-  Input, distance, (<+>), (<->), (.*)) 
+import Data.Datamining.Clustering.Gsom.Input 
 
 ------------------------------------------------------------------------------
 -- Types
