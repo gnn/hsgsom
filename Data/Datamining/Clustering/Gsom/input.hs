@@ -1,4 +1,17 @@
--- |This module contains everything concerning the input to gsom.
+------------------------------------------------------------------------------
+-- | 
+-- Module       : Data.Datamining.Clustering.Gsom.Input
+-- Copyright    : (c) 2009 Stephan Günther
+-- License      : BSD3
+--
+-- Maintainer   : gnn.github@gmail.com
+-- Stability    : experimental
+-- Portability  : portable
+--
+-- The GSOM algorithm works on numerical input vectors. These input vectors
+-- are internally represented as lists of @'Double'@s and this module contains
+-- the functions working on these.
+------------------------------------------------------------------------------
 
 module Data.Datamining.Clustering.Gsom.Input(
   Bounds, Input, Inputs

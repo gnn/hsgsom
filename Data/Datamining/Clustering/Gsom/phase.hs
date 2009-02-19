@@ -1,9 +1,22 @@
--- | The GSOM Algorithm can be split up in multiple sequentially executed
--- phases. Each of these phases makes a certain number of passes over
--- the inputs. While doing so the algorithm modifies a given lattice
+------------------------------------------------------------------------------
+-- | 
+-- Module       : Data.Datamining.Clustering.Gsom.Node.Lattice
+-- Copyright    : (c) 2009 Stephan Günther
+-- License      : BSD3
+--
+-- Maintainer   : gnn.github@gmail.com
+-- Stability    : experimental
+-- Portability  : non-portable (requires STM)
+--
+-- The GSOM Algorithm can be split up in multiple sequentially executed
+-- @'Phase'@s. Each of these phases makes a certain number of passes over
+-- the inputs. While doing so each @'phase'@ modifies a given @'Lattice'@
 -- according to a certain set of specified parameters.
--- This module contains all the functionality needed to run one or more 
--- phases of the GSOM algorithm.
+-- This module contains the definition of the @'Phase'@ type, a few default
+-- instances and the functions needed to run a single @'phase'@ or to 
+-- @'run'@ a sequence of @'Phase'@s.
+------------------------------------------------------------------------------
+
 module Data.Datamining.Clustering.Gsom.Phase(
   Data.Datamining.Clustering.Gsom.Lattice.newRandom, 
   Data.Datamining.Clustering.Gsom.Lattice.newCentered,

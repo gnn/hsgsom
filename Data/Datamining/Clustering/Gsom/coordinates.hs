@@ -1,9 +1,20 @@
--- | Nodes are stored with two dimensional discrete coordinates 
--- uniquely identifying them. Since these coordinates will be used
--- as a key inside a 'Data.Map' and since we need some functions 
--- to translate walking from one node into a certain direction 
--- to walking from one coordinate to another all this functionality
--- will be put into this module.
+------------------------------------------------------------------------------
+-- | 
+-- Module       : Data.Datamining.Clustering.Gsom
+-- Copyright    : (c) 2009 Stephan Günther
+-- License      : BSD3
+--
+-- Maintainer   : gnn.github@gmail.com
+-- Stability    : experimental
+-- Portability  : portable
+--
+-- The network created by the GSOM algorithm is layed in two dimensions.
+-- Thus one needs to assign two dimensional coordinates to nodes of the 
+-- network and for a clustering to the clusters.
+--
+-- The typed defining these coordinates and functions to handle them belong
+-- into this module.
+------------------------------------------------------------------------------
 module Data.Datamining.Clustering.Gsom.Coordinates where
 
 type Coordinates = (Int, Int)

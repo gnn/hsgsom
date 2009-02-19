@@ -1,5 +1,17 @@
--- | This module contains everything concerning the lattice which is build
--- by gsom.
+------------------------------------------------------------------------------
+-- | 
+-- Module       : Data.Datamining.Clustering.Gsom.Node.Lattice
+-- Copyright    : (c) 2009 Stephan Günther
+-- License      : BSD3
+--
+-- Maintainer   : gnn.github@gmail.com
+-- Stability    : experimental
+-- Portability  : non-portable (requires STM)
+--
+-- The type @'Lattice'@ is the type of the network build by the GSOM 
+-- algorithm. This type and most of the functions dealing with it are defined
+-- in this module.
+------------------------------------------------------------------------------
 
 module Data.Datamining.Clustering.Gsom.Lattice(
   Lattice,

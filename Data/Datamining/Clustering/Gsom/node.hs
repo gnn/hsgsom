@@ -1,8 +1,17 @@
--- | This module contains everything concerning the nodes stored in a 
--- lattice which comprises a gsom. All impure functions in here should
--- be inside the STM monad because nodes are the smallest thing we have 
--- inside a gsom and transacton granularity should be controlled on a 
--- higher level.
+------------------------------------------------------------------------------
+-- | 
+-- Module       : Data.Datamining.Clustering.Gsom.Node
+-- Copyright    : (c) 2009 Stephan Günther
+-- License      : BSD3
+--
+-- Maintainer   : gnn.github@gmail.com
+-- Stability    : experimental
+-- Portability  : non-portable (requires STM)
+--
+-- The network of nodes which is build by GSOM consists if nodes of type 
+-- @'Node'@ and this module contains the definition if this type along with
+-- most of the functions altering or working on them.
+------------------------------------------------------------------------------
 
 module Data.Datamining.Clustering.Gsom.Node(
     Neighbours, Node(..), Nodes
