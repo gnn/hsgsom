@@ -40,6 +40,8 @@ neighbour coordinates direction
       [(2, 0), (1, 1), (-1, 1), (-2, 0), (-1, -1), (1, -1)]
       !! direction
 
+-- | @'neighbourCoordinates' point@ calculates the list of 
+-- coordinates which are directly adjacent to @point@.
 neighbourCoordinates :: Coordinates -> [Coordinates]
 neighbourCoordinates cs = map (neighbour cs) directions
 
