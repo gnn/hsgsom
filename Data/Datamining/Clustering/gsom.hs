@@ -18,6 +18,69 @@
 ------------------------------------------------------------------------------
 
 module Data.Datamining.Clustering.Gsom (
+-- * Algorithm Input
+-- | The GSOM algorithm expects a list of input vectors as its input.
+-- These input vectors are just lists of @'Double'@s.
+  Input, Inputs
+
+-- ** Input processing
+, dimension, Bounds, bounds, normalize, unnormalize
+
+-- ** Operations between input vectors
+, distance, (*.), (.*), (<+>), (<->)
+
+-- * The map created by GSOM
+-- | The growing self organizing map builds, as its name suggests, a map
+-- representing the input vectors. This map is of type @'Lattice'@ and is 
+-- a network of @'Node'@s.
+
+-- ** The @'Node'@s of the map
+, Node(..), Nodes, Neighbours, Neighbourhood
+
+-- *** Node Creation
+, node
+
+-- *** Modification
+, propagate, update, updateError
+
+-- *** Querying
+, isLeaf, isNode, neighbourhood, unwrappedNeighbours
+
+-- *** Debugging
+, putNode
+
+-- ** The map type
+, Lattice
+
+-- *** Creating initial lattices
+, newCentered, newRandom
+
+-- *** Querying a lattice
+, L.bmu, nodes
+
+-- *** Debugging
+, putLattice, putWeights
+
+-- * Running GSOM
+-- | The GSOM algorithm builds the map by sequentially @'run'@ning a given
+-- number of @'Phases'@ over the input.
+
+-- ** The Phase type
+, Phase(..), Phases, Kernel(..), LearningRate(..)
+
+-- *** Predefined phases
+, defaultFirst, defaultSecond, defaultThird, defaults
+
+-- *** Running a phase/phases
+, phase, run
+
+-- * Constructing a clustering from the map
+-- ** The Clustering type
+, Cluster(..), Clustering
+
+-- ** Construction
+, cluster, clustering
+
 ) where
 
 ------------------------------------------------------------------------------
@@ -38,6 +101,7 @@ import qualified Data.Map as Map
 import Data.Datamining.Clustering.Gsom.Coordinates
 import Data.Datamining.Clustering.Gsom.Input
 import Data.Datamining.Clustering.Gsom.Lattice hiding (bmu)
+import qualified Data.Datamining.Clustering.Gsom.Lattice as L(bmu)
 import Data.Datamining.Clustering.Gsom.Node
 import Data.Datamining.Clustering.Gsom.Phase
 
