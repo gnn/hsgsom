@@ -5,9 +5,7 @@
 -- higher level.
 
 module Data.Datamining.Clustering.Gsom.Node(
-    module Control.Concurrent.STM
-  , module Control.Monad
-  , Neighbours, Node(..), Nodes
+    Neighbours, Node(..), Nodes
   , isLeaf, isNode, neighbourhood, newWeight, node, propagate, putNode
   , unwrappedNeighbours, update, updateError) where 
 

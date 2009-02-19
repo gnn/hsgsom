@@ -5,7 +5,6 @@
 -- This module contains all the functionality needed to run one or more 
 -- phases of the GSOM algorithm.
 module Data.Datamining.Clustering.Gsom.Phase(
-  module Data.Datamining.Clustering.Gsom.Input,
   Data.Datamining.Clustering.Gsom.Lattice.newRandom, 
   Data.Datamining.Clustering.Gsom.Lattice.newCentered,
   Data.Datamining.Clustering.Gsom.Lattice.putWeights,
@@ -19,6 +18,8 @@ module Data.Datamining.Clustering.Gsom.Phase(
 -- Standard modules
 ------------------------------------------------------------------------------
 
+import Control.Concurrent.STM
+import Control.Monad
 import Data.List
 
 ------------------------------------------------------------------------------

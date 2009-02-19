@@ -12,6 +12,8 @@ module Data.Datamining.Clustering.Gsom.Lattice(
 -- Standard modules
 ------------------------------------------------------------------------------
 
+import Control.Concurrent.STM
+import Control.Monad
 import Data.List
 import Data.Map(Map(..))
 import qualified Data.Map as Map
