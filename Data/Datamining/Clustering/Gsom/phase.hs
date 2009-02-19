@@ -159,7 +159,7 @@ run ps lattice is = foldM f lattice ps where
 -- Predefined Kernels
 ------------------------------------------------------------------------------
 
-bubble, gaussian :: Double -> Int -> Double
+bubble :: Double -> Int -> Double
 -- | The simplest kernel, which essentially does nothing.
 -- It always evaluates to @1@ thus having no effect on updating weights.
 bubble _ _ = 1
@@ -169,17 +169,15 @@ bubble _ _ = 1
 -- is used as the actual kernel argument. Thus the formula is:
 --
 -- * @gaussian s d = exp(d^2/(2*s^2))@
+gaussian :: Double -> Int -> Double
 gaussian s d = exp $ fromIntegral d ** 2 / (2 * s**2)
 
 ------------------------------------------------------------------------------
 -- Predefined learning rate updating functions
 ------------------------------------------------------------------------------
 
--- | Functions to update the learning rate. Use currying to supply them 
--- with a starting value and use the resulting function to fill in the 
--- @'learningRate'@ field of @'Phase'@.  
-
-linear, inverseAge :: Double -> Int -> Int -> Double
+-- Functions to update the learning rate. Used by the constructors of
+-- @'LearningRate'@ 
 
 -- | The linear learning rate reduction function. If you supply it with 
 -- the initial learning rate @lr@ it uses the following formula where 
@@ -187,6 +185,7 @@ linear, inverseAge :: Double -> Int -> Int -> Double
 -- number of steps the phase will take:
 --
 -- *@linear lr step steps = lr * (1-step/steps)@
+linear :: Double -> Int -> Int -> Double
 linear lr step steps = lr * (1 - fromIntegral step / fromIntegral steps)
 
 -- | The inverse time learning rate reduction function. Given an initial
@@ -194,6 +193,7 @@ linear lr step steps = lr * (1 - fromIntegral step / fromIntegral steps)
 -- current step number beeing @step@, the formula is:
 --
 -- *@inverseAge lr step steps = lr * steps / (steps + 100 * step)@
+inverseAge :: Double -> Int -> Int -> Double
 inverseAge lr step steps = let fI = fromIntegral in 
   lr * fI steps / (fI steps + 100 * fI step)
 
@@ -201,14 +201,12 @@ inverseAge lr step steps = let fI = fromIntegral in
 -- Predefined phases
 ------------------------------------------------------------------------------
 
--- | The three default phases of the GSOM algorithm. They all use the 
--- bubble kernel and a linear learning rate decrease.
-defaultFirst, defaultSecond, defaultThird :: Phase
 
--- | The default first phase is the only growing phase. It makes @5@
--- passes over the input, uses an initial learning rate of @0.1@ and 
--- a starting neighbourhood size of @3@. The @'spreadFactor'@ is set
--- to @0.1@.
+-- | The default first phase is the only growing phase. It makes 5
+-- passes over the input, uses an initial learning rate of 0.1 and 
+-- a starting neighbourhood size of 3. The @'spreadFactor'@ is set
+-- to 0.1.
+defaultFirst :: Phase
 defaultFirst = Phase {
   passes = 5,
   neighbourhoodSize = 3,
@@ -218,10 +216,11 @@ defaultFirst = Phase {
   spreadFactor = 0.1 
 }
 
--- | The default for the second phase is a smoothing phase making @50@
--- passes over the input vectors with a learning rate of @0.05@ and an
--- initial neighbourhood size of @2@. Since there is no node growth the
--- @'spreadFactor'@ is ignored and thus set to @0@.
+-- | The default for the second phase is a smoothing phase making 50
+-- passes over the input vectors with a learning rate of 0.05 and an
+-- initial neighbourhood size of 2. Since there is no node growth the
+-- @'spreadFactor'@ is ignored and thus set to 0.
+defaultSecond :: Phase
 defaultSecond = Phase {
   passes = 50,
   neighbourhoodSize = 2,
@@ -232,9 +231,10 @@ defaultSecond = Phase {
 }
 
 -- | The default for the third and last phase is a smoothing phase making 
--- @50@ passes over the input vectors with a learning rate of @0.01@ and 
--- an initial neighbourhood size of @1@. Since there is no node growth the
--- @'spreadFactor'@ is ignored and thus set to @0@.
+-- 50 passes over the input vectors with a learning rate of 0.01 and 
+-- an initial neighbourhood size of 1. Since there is no node growth the
+-- @'spreadFactor'@ is ignored and thus set to 0.
+defaultThird :: Phase
 defaultThird = Phase {
   passes = 50,
   neighbourhoodSize = 1,

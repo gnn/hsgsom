@@ -92,7 +92,7 @@ infixl 7 *.
 -- | Subtraction and addition of vectors between each other.
 infixl 6 <->, <+>
 
-(<+>), (<->) :: Input -> Input -> Input
+(<+>) :: Input -> Input -> Input
 (<+>) i1 i2 = let 
   front = zipWith (+) i1 i2 
   l1 = length i1
@@ -100,6 +100,8 @@ infixl 6 <->, <+>
     0   -> front
     -1  -> front ++ drop l1 i2
     1   -> front ++ drop l2 i1
+
+(<->) :: Input -> Input -> Input
 (<->) i1 i2 = i1 <+> (-1) .* i2
 
 ------------------------------------------------------------------------------
