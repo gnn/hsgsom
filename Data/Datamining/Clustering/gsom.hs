@@ -52,7 +52,7 @@ data Cluster = Cluster {
   center :: Input
     -- | the input vectors belonging to this cluster. Note that there's
     -- no guarantee and in fact it is quite improbable that you will
-    -- have @('center'@ `'elem'` 'contents')@
+    -- have @('center' `'elem'` 'contents')@
 , contents :: Inputs
   -- | the coordinates of this cluster
 , coordinates :: Coordinates
