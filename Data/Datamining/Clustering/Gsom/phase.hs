@@ -108,8 +108,21 @@ kernelFunction Bubble = bubble
 kernelFunction Gaussian = gaussian
 
 -- The predefined learning rate adaption functions. Their parameters are 
--- used as the starting learning rate.
-data LearningRate = Linear Double | InverseAge Double deriving (Read, Show)
+-- used as the initial learning rate.
+data LearningRate = 
+  -- | The linear learning rate reduction function. If you supply it with 
+  -- the initial learning rate @lr@ it uses the following formula where 
+  -- @step@ is the current step the phase is in and @steps@ is the overall
+  -- number of steps the phase will take:
+  --
+  -- *@linear lr step steps = lr * (1-step/steps)@
+  Linear Double | 
+  -- | The inverse time learning rate reduction function. Given an initial
+  -- learning rate of @lr@, a maximum number of steps of @steps@ and the 
+  -- current step number beeing @step@, the formula is:
+  --
+  -- *@inverseAge lr step steps = lr * steps / (steps + 100 * step)@
+  InverseAge Double deriving (Read, Show)
 
 -- | Returns the learning rate adaption functino associated with the given
 -- type of learning rate.
