@@ -47,7 +47,7 @@ bounds (i:is) = foldl' f (dz i) is where
     a' `seq` b' `seq` t `seq` (a',b') : t
 
 -- | Unnormalizes the given input vectors @inputs@ assuming that it's bounds
--- prviously where @bounds@.
+-- previously where @bounds@.
 unnormalize :: Bounds -> Inputs -> Inputs
 unnormalize bounds inputs = map (map f . zip bounds) inputs where   
   f ((min',max'), n) = if min' == max' then min' else n*(max' - min')+min'

@@ -119,7 +119,7 @@ run ps lattice is = foldM f lattice ps where
 
 bubble, gaussian :: Double -> Int -> Double
 -- | The simplest kernel, which essentially does nothing.
--- It always evaluates to @1@ thus havin no effect on updating weights.
+-- It always evaluates to @1@ thus having no effect on updating weights.
 bubble _ _ = 1
 
 -- | A gaussian kernel. The neighbourhood size @s@ currently in effect 

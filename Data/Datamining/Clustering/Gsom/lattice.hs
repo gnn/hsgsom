@@ -118,7 +118,7 @@ spawn lattice parent direction = let
   return $! newLattice
 
 -- | @'vent' lattice node growthThreshold@ will check the accumulated error 
--- of the @node@ against the given @growthThreshol@ and will do nothing if 
+-- of the @node@ against the given @growthThreshold@ and will do nothing if 
 -- the errror value is below the growth threshhold. Otherwise it will either 
 -- spawn new nodes or it will propagate the accumulated error value to it's 
 -- neighbours, depending on whether the node is a boundary node or not.
