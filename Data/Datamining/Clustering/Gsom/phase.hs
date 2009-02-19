@@ -18,14 +18,14 @@
 ------------------------------------------------------------------------------
 
 module Data.Datamining.Clustering.Gsom.Phase(
-  Data.Datamining.Clustering.Gsom.Lattice.newRandom, 
-  Data.Datamining.Clustering.Gsom.Lattice.newCentered,
-  Data.Datamining.Clustering.Gsom.Lattice.putWeights,
-  Phase(..),
-  Kernel(..), LearningRate(..),
-  defaultFirst, defaultSecond, defaultThird, defaults, 
-  phase,
-  run
+  Phase(..), Phases
+-- | The three default phases of the GSOM algorithm. They all use the 
+-- bubble kernel and a linear learning rate decrease.
+, defaultFirst, defaultSecond, defaultThird, defaults
+, phase
+, run
+, Kernel(..)
+, LearningRate(..),
 ) where 
 
 ------------------------------------------------------------------------------
