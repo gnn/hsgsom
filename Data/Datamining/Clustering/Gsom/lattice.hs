@@ -63,7 +63,7 @@ newRandom g dimension = let
 
 -- | @'newNormalized' dimension@ creates a new minimal lattice where weights 
 -- are initialized with all components having the value @0.5@ the and with 
--- the weight vectors havin length @dimension@.
+-- the weight vectors having length @dimension@.
 newCentered :: Int -> IO Lattice
 newCentered = new (cycle [cycle [0.5]])
 
@@ -115,7 +115,7 @@ spawn _  Leaf _ = error "in spawn: spawn called with a Leaf parent."
 spawn lattice parent direction = let 
   spawnCoordinates = neighbour (location parent) direction 
   nCs = neighbourCoordinates spawnCoordinates in do
-  -- firs we have to check whether there are already some TVars existing
+  -- first we have to check whether there are already some TVars existing
   -- at the locations of the neighbours of the new node and create those
   -- don't exist yet.
   newLattice <- foldM (\m k -> if not $ Map.member k m

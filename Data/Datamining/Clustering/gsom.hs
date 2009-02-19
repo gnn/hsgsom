@@ -66,7 +66,7 @@ type Clustering = Map Coordinates Cluster
 -- Creation
 ------------------------------------------------------------------------------
 
--- | Computes a clustering induce by the given lattice.
+-- | Computes a clustering induced by the given lattice.
 --
 -- @'clustering' lattice@ uses the @'weights'@ of the @'nodes'@ 
 -- stored in @lattice@ to generate clusters and returns the 

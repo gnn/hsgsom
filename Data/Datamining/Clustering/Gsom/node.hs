@@ -73,7 +73,7 @@ type Neighbours = [TVar Node]
 -- is neede, this type should be used.
 -- A @Neighbourhood@ consits of a list of pairs of nodes and their 
 -- discrete grid distance from the source of the neighbourhood.
--- The source node is the only one with distance @0@ while immediat 
+-- The source node is the only one with distance @0@ while immediate 
 -- neighbours get distance one and so on.
 type Neighbourhood = [(Int, Node)]
 
