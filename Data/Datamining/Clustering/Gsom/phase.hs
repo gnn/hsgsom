@@ -67,14 +67,14 @@ data Phase = Phase {
   -- argument and the total number of steps the phase will have as the 
   -- second argument to calculate the learning rate which will be in 
   -- effect for this phase.
-  learningRate :: Int -> Int -> Double,
+  learningRate :: LearningRate,
   -- | The kernel function. It is used in conjunction with the learning 
   -- rate to adjust weight adaption. 
   -- @kernel currentNeighbourhoodsize gridDistance@ should take the 
   -- neighbourhood size which is in effect during the current step and
   -- a nodes grid distance from the winning node. 
   -- The neighbourhood size will be a real number due to the linear decrease.
-  kernel :: Double -> Int -> Double,
+  kernel :: Kernel,
   -- | The @grow@ flag determines whether this is a growing phase or not.
   -- If this is @False@ then no new nodes will be grown.
   grow :: Bool,
@@ -89,6 +89,34 @@ data Phase = Phase {
 
 type Phases = [Phase]
 
+-- The predefined Kernel Functions.
+data Kernel = 
+  -- | The bubble kernel is essentially the identity, 
+  -- i.e. it has no effect.
+  Bubble | 
+  -- | Let @s@ be the neighbourhood size currently in effect 
+  -- and @d@ be the grid-distance of the current node to the winning node
+  -- then this kernel calculates a factor to control weight adaption with
+  -- the following formula:
+  --
+  -- * @gaussian s d = exp(d^2/(2*s^2))@
+  Gaussian deriving (Eq, Enum, Ord, Read, Show)
+
+-- | Returns the kernel function associated with the given kernel.
+kernelFunction :: Kernel -> (Double -> Int -> Double)
+kernelFunction Bubble = bubble
+kernelFunction Gaussian = gaussian
+
+-- The predefined learning rate adaption functions. Their parameters are 
+-- used as the starting learning rate.
+data LearningRate = Linear Double | InverseAge Double deriving (Read, Show)
+
+-- | Returns the learning rate adaption functino associated with the given
+-- type of learning rate.
+adaption :: LearningRate -> (Int -> Int -> Double)
+adaption (Linear d) = linear d
+adaption (InverseAge d) = inverseAge d
+
 ------------------------------------------------------------------------------
 -- Running phases
 ------------------------------------------------------------------------------
@@ -102,7 +130,7 @@ phase ps lattice is =
   foldl' (>>=) (return (0, lattice)) (replicate (passes ps) pass) where 
     pass state = foldM consume state is
     gT = growthThreshold ps $ dimension is
-    lR x = learningRate ps x steps
+    lR x = adaption (learningRate ps) x steps
     steps = passes ps * length is
     fI = fromIntegral
     r x = ((1 - fI x / fI steps ) * fI (neighbourhoodSize ps)) :: Double
@@ -110,7 +138,7 @@ phase ps lattice is =
       winner <- bmu i lattice
       atomically $ do
         affected <- neighbourhood winner $ round (r c)
-        mapM_ (update i (lR c) (kernel ps $ r c)) affected 
+        mapM_ (update i (lR c) (kernelFunction (kernel ps) $ r c)) affected 
         newLattice <- if grow ps
           then updateError winner i >> vent l winner gT
           else return $! l
@@ -184,8 +212,8 @@ defaultFirst, defaultSecond, defaultThird :: Phase
 defaultFirst = Phase {
   passes = 5,
   neighbourhoodSize = 3,
-  learningRate = linear 0.1,
-  kernel = bubble,
+  learningRate = Linear 0.1,
+  kernel = Bubble,
   grow = True,
   spreadFactor = 0.1 
 }
@@ -197,8 +225,8 @@ defaultFirst = Phase {
 defaultSecond = Phase {
   passes = 50,
   neighbourhoodSize = 2,
-  learningRate = linear 0.05,
-  kernel = bubble,
+  learningRate = Linear 0.05,
+  kernel = Bubble,
   grow = False,
   spreadFactor = 0 
 }
@@ -210,8 +238,8 @@ defaultSecond = Phase {
 defaultThird = Phase {
   passes = 50,
   neighbourhoodSize = 1,
-  learningRate = linear 0.01,
-  kernel = bubble,
+  learningRate = Linear 0.01,
+  kernel = Bubble,
   grow = False,
   spreadFactor = 0 
 }
