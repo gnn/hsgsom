@@ -14,7 +14,7 @@
 ------------------------------------------------------------------------------
 
 module Data.Datamining.Clustering.Gsom.Node(
-    Neighbours, Node(..), Nodes
+    Neighbours, Neighbourhood, Node(..), Nodes
   , isLeaf, isNode, neighbourhood, newWeight, node, propagate, putNode
   , unwrappedNeighbours, update, updateError) where 
 
