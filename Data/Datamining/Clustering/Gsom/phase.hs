@@ -22,7 +22,8 @@ module Data.Datamining.Clustering.Gsom.Phase(
   Data.Datamining.Clustering.Gsom.Lattice.newCentered,
   Data.Datamining.Clustering.Gsom.Lattice.putWeights,
   Phase(..),
-  defaults, 
+  Kernel(..), LearningRate(..),
+  defaultFirst, defaultSecond, defaultThird, defaults, 
   phase,
   run
 ) where 
