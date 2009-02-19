@@ -153,7 +153,7 @@ phase ps lattice is =
 -- @'newRandom'@ and the @'newCentered'@ functions.
 run :: Phases -> Lattice -> Inputs -> IO Lattice
 run ps lattice is = foldM f lattice ps where
-  f l p = putStrLn "Starting a phase..." >> phase p l is
+  f l p = phase p l is
 
 ------------------------------------------------------------------------------
 -- Predefined Kernels
