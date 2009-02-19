@@ -1,2 +1,54 @@
-This is the readme file for a yet to be named implementation of 
-a growing self organizing map (GSOM) in haskell.
+= README
+
+This is the README file of hsgsom, a haskell library implementing the 
+growing self organising map clustering algorithm.
+
+== The Algorithm
+
+The growing self organising map (GSOM) algorithm is a clustering algorithm
+working on a set of n-dimensional numeric input vectors. It's output is a 
+network of nodes laid out in two dimensions where each node has a weight 
+vector associated with it. This weight vector has the same dimension as the 
+input vectors and is meant to be intepreted as a cluster center, i.e. it 
+represents those input vectors whose distance to the node's weight vector
+is minimal when compared to the distance to the other nodes weight vectors.
+See <http://en.wikipedia.org/wiki/GSOM> for an explanation of the algorithm.
+The algorithm was introduced in:
+
+  Alahakoon, D., Halgamuge, S. K. and Sirinivasan, B. (2000) 
+  Dynamic Self Organizing Maps With Controlled Growth 
+  for Knowledge Discovery, 
+  IEEE Transactions on Neural Networks, 
+  Special Issue on Knowledge Discovery and Data Mining, 11, pp 601-614.
+
+== License 
+
+This package and its contents are licensed under the BSD 3 clause license.
+You should have received a file called LICENSE containing said license 
+along with this package.
+
+== Versioning
+
+This README correponds to version 0.0.1 of hsgsom, so as you can see it is
+a very early version.
+Version numbers follow the pattern X.Y.Z and have the following meaning:
+
+  - a change in Z corresponds to minor changes as in documentation changes
+    or changes to the underlying implementation
+
+  - a change in Y correponds to added functionality and/or backwards 
+    compatible interface changes/additions.
+
+  - a change in X correpsonds to a major implementation chagne either
+    drastically changing the algorithm behaviour or performance or 
+    changing the interface in a possibly not backwards compatible way.
+
+== Questions, Bugs, etc...
+
+If you think you have found a bug, or you have questions or suggestions
+or really anything to say about the package it would be greatly appreciated
+if you would drop me a note or an email.
+This is my very firt attempt at packaging and releasing a substantial amount
+my own code to the public and I'm eager to learn how to do thinks better.
+
+Thanks for using/looking at this package and have a nice day.
