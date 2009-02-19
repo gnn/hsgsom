@@ -22,12 +22,3 @@ Library
 
   GHC-Options:     -O2 -fvia-C -optc-O3
 
-Executable          unit-square
-  Main-is:          unit-square.lhs
-  Hs-Source-Dirs:   ., mains
-  Other-Modules:    Data.Datamining.Clustering.Gsom.Lattice, 
-                    Data.Datamining.Clustering.Gsom.Node, 
-                    Data.Datamining.Clustering.Gsom.Phase
-
-  GHC-Options:     -O2 -fvia-C -optc-O3
-
