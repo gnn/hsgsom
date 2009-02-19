@@ -12,7 +12,7 @@ type Direction = Int
 
 type Directions = [Int]
 
--- | A list of supported directions. Since we are only dealing with
+-- | The list of supported directions. Since we are only dealing with
 -- hexagonal lattices, there are only six possible directions.
 directions :: Directions
 directions = [0..5]

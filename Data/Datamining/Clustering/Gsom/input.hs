@@ -16,7 +16,7 @@ import Data.List
 -- Utility functions on lists of inputvectors
 ------------------------------------------------------------------------------
 
--- | Input vectors are just lists of doubles.
+-- | Input vectors are represented as lists of Doubles.
 type Input = [Double]
 type Inputs = [Input]
 

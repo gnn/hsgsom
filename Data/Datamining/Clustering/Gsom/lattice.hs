@@ -122,7 +122,7 @@ spawn lattice parent direction = let
 -- the errror value is below the growth threshhold. Otherwise it will either 
 -- spawn new nodes or it will propagate the accumulated error value to it's 
 -- neighbours, depending on whether the node is a boundary node or not.
--- If new nodes are spawned they will added to @lattice@.
+-- If new nodes are spawned they will be added to @lattice@.
 
 vent :: Lattice -> Node -> Double -> STM Lattice
 vent _ Leaf _  = error "in vent: vent called with a Leaf as argument."
