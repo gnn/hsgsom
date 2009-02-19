@@ -85,7 +85,7 @@ data Phase = Phase {
   --
   -- where @d@ is the input dimension.
   spreadFactor  :: Double
-}
+} deriving (Read, Show)
 
 type Phases = [Phase]
 
