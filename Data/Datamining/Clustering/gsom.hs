@@ -78,8 +78,8 @@ module Data.Datamining.Clustering.Gsom (
 -- ** The Clustering type
 , Cluster(..), Clustering
 
--- ** Construction
-, cluster, clustering
+-- ** Construction and Query
+, cluster, clustering, nearestCluster
 
 ) where
 
@@ -156,6 +156,11 @@ cluster :: Inputs -> Clustering -> Clustering
 cluster is cs = foldl' f cs is where
   f cs i = let c = bmu i cs in 
     Map.insert (coordinates c) (c{contents = i : contents c}) cs
+
+-- | @'nearestCluster' input clustering@ returns the cluster which has 
+-- the center with the smallest distance to @input@.
+nearestCluster :: Input -> Clustering -> Cluster
+nearestCluster = bmu
 
 ------------------------------------------------------------------------------
 -- Internal Functions
