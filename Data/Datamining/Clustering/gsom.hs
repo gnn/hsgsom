@@ -29,6 +29,9 @@ module Data.Datamining.Clustering.Gsom (
 -- ** Operations between input vectors
 , distance, (*.), (.*), (<+>), (<->)
 
+-- ** Auxiliary Types
+, Coordinates
+
 -- * The map created by GSOM
 -- | The growing self organizing map builds, as its name suggests, a map
 -- representing the input vectors. This map is of type @'Lattice'@ and is 
