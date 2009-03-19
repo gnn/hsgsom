@@ -122,7 +122,7 @@ data Cluster = Cluster {
 , contents :: [Int]
   -- | the coordinates of this cluster
 , coordinates :: Coordinates
-}
+} deriving (Read, Show)
 
 -- | The final clustering which is the result of the GSOM algorithm 
 -- is a @'Data.Map'@ mapping @'Coordinates'@ to @'Cluster'@s.
