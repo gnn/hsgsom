@@ -117,10 +117,9 @@ data Cluster = Cluster {
   -- | the vector which best represents all the vectors belonging to this
   -- cluster.
   center :: Input
-    -- | the input vectors belonging to this cluster. Note that there's
-    -- no guarantee and in fact it is quite improbable that you will
-    -- have @('center' `'elem'` 'contents')@
-, contents :: Inputs
+  -- | The indices of the input vectors belonging to this cluster. 
+  -- That means a cluster is always relative to a set of @'Inputs'@ 
+, contents :: [Int]
   -- | the coordinates of this cluster
 , coordinates :: Coordinates
 }
@@ -151,14 +150,14 @@ clustering l = do
     (xy, Cluster {center = w, contents = [], coordinates = xy})) associations
 
 -- | @'cluster' inputs clustering@ clusters the given @inputs@ according to 
--- the centers of the clusters in @clustering@. That means each input from
--- @inputs@ is added to the contents of the cluster center it has minimal 
--- distance to.
+-- the centers of the clusters in @clustering@. That means for each input @i@
+-- from @inputs@ the index of @i@ is added to the contents of the cluster 
+-- center to which @i@ has minimal distance.
 -- TODO: Implement tiebreaker.
 cluster :: Inputs -> Clustering -> Clustering
-cluster is cs = foldl' f cs is where
-  f cs i = let c = bmu i cs in 
-    Map.insert (coordinates c) (c{contents = i : contents c}) cs
+cluster is cs = foldl' f cs (zip [0..] is) where
+  f cs (index, i) = let c = bmu i cs in 
+    Map.insert (coordinates c) (c{contents = index : contents c}) cs
 
 -- | @'nearestCluster' input clustering@ returns the cluster which has 
 -- the center with the smallest distance to @input@.
