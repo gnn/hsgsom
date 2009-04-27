@@ -6,8 +6,8 @@ License:            BSD3
 License-File:       LICENSE
 Data-Files:         README
 Author:             Stephan Günther
-Maintainer:         Stephan Günther <gnn.github@gmail.com>
-Category:           Datamining, Clustering
+Maintainer:         Stephan Günther <gnn dot github at gmail dot com>
+Category:           Data Mining, Clustering
 Synopsis:           An implementation of the GSOM clustering algorithm.
 Description:
   The growing self organising map (GSOM) algorithm is a clustering algorithm
