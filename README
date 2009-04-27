@@ -39,7 +39,7 @@ Version numbers follow the pattern X.Y.Z and have the following meaning:
   - a change in Y correponds to added functionality and/or backwards 
     compatible interface changes/additions.
 
-  - a change in X correpsonds to a major implementation chagne either
+  - a change in X correpsonds to a major implementation change either
     drastically changing the algorithm behaviour or performance or 
     changing the interface in a possibly not backwards compatible way.
 
