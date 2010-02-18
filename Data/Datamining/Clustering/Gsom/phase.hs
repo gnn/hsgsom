@@ -148,7 +148,7 @@ phase ps lattice is =
     fI = fromIntegral
     r x = ((1 - fI x / fI steps ) * fI (neighbourhoodSize ps)) :: Double
     consume (c, l) i = do
-      winner <- bmu i lattice
+      winner <- atomically $ bmu i lattice
       atomically $ do
         affected <- neighbourhood winner $ round (r c)
         mapM_ (update i (lR c) (kernelFunction (kernel ps) $ r c)) affected 

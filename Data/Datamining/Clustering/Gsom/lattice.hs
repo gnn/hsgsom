@@ -77,12 +77,12 @@ nodes = mapM readTVar . Map.elems
 
 -- | @'bmu' input lattice@ returns the best matching unit i.e. the node with
 -- minimal distance to the given input vector.
-bmu :: Input -> Lattice -> IO Node
-bmu i l = liftM (filter isNode) (atomically (nodes l)) >>= (\l' -> 
+bmu :: Input -> Lattice -> STM Node
+bmu i l = liftM (filter isNode) (nodes l) >>= (\l' -> 
   let ws = readTVar.weights in case l' of
     [] -> error "error in bmu: empty lattices shouldn't occur."
     (x:xs) -> 
-      foldM (\n1 n2 -> atomically $ do
+      foldM (\n1 n2 -> do
         w1 <- ws n1
         w2 <- ws n2
         return $! if distance i w1 <= distance i w2 
