@@ -8,11 +8,11 @@
 -- Stability    : experimental
 -- Portability  : portable
 --
--- The network created by the GSOM algorithm is layed in two dimensions.
--- Thus one needs to assign two dimensional coordinates to nodes of the 
+-- The network created by the GSOM algorithm is layed out in two dimensions.
+-- Thus one needs to assign two dimensional coordinates to the nodes of the 
 -- network and for a clustering to the clusters.
 --
--- The typed defining these coordinates and functions to handle them belong
+-- The types defining these coordinates and the functions to handle them belong
 -- into this module.
 ------------------------------------------------------------------------------
 module Data.Datamining.Clustering.Gsom.Coordinates where

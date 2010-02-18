@@ -116,12 +116,12 @@ spawn lattice parent direction = let
   spawnCoordinates = neighbour (location parent) direction 
   nCs = neighbourCoordinates spawnCoordinates in do
   -- first we have to check whether there are already some TVars existing
-  -- at the locations of the neighbours of the new node and create those
+  -- at the locations of the neighbours of the new node and create those that
   -- don't exist yet.
   newLattice <- foldM (\m k -> if not $ Map.member k m
       then newTVar Leaf >>= (\v -> return $! Map.insert k v m)
       else return $! m) lattice nCs
-  -- after creating all the necessary neighbours we can get create the new 
+  -- after creating all the necessary neighbours we can create the new 
   -- node with it's neighbours and calculate it's new weight vector
   let ns = specificElements newLattice nCs
   result <- node (neighbour (location parent) direction) [] ns
