@@ -211,7 +211,7 @@ newWeight node d = let
   if isNode sibling 
     then do
       ws <- readTVar $ weights sibling 
-      writeTVar w $ 2 .* wp <+> ws
+      writeTVar w $ 2 .* wp <-> ws
     else do
       stop <- return $! error (
         "in newWeight: since the decision to only support hexagonal\n" ++
