@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------
--- | 
+-- |
 -- Module       : Data.Datamining.Clustering.Gsom
 -- Copyright    : (c) 2009 Stephan Günther
 -- License      : BSD3
@@ -8,12 +8,12 @@
 -- Stability    : experimental
 -- Portability  : non-portable (requires STM)
 --
--- This module should contain everything you need to run the GSOM clustering 
+-- This module should contain everything you need to run the GSOM clustering
 -- algorithm. It collects and re-exports all important and needed functions
--- from moduls lower in the hirarchy. 
+-- from moduls lower in the hirarchy.
 --
--- Ideally you should never need to look at those modules. If you do need 
--- to do this, it is a design failure and I would appreciate it if you 
+-- Ideally you should never need to look at those modules. If you do need
+-- to do this, it is a design failure and I would appreciate it if you
 -- would drop me a note.
 ------------------------------------------------------------------------------
 
@@ -34,7 +34,7 @@ module Data.Datamining.Clustering.Gsom (
 
 -- * The map created by GSOM
 -- | The growing self organizing map builds, as its name suggests, a map
--- representing the input vectors. This map is of type @'Lattice'@ and is 
+-- representing the input vectors. This map is of type @'Lattice'@ and is
 -- a network of @'Node'@s.
 
 -- ** The @'Node'@s of the map
@@ -117,14 +117,14 @@ data Cluster = Cluster {
   -- | the vector which best represents all the vectors belonging to this
   -- cluster.
   center :: Input
-  -- | The indices of the input vectors belonging to this cluster. 
-  -- That means a cluster is always relative to a set of @'Inputs'@ 
+  -- | The indices of the input vectors belonging to this cluster.
+  -- That means a cluster is always relative to a set of @'Inputs'@
 , contents :: [Int]
   -- | the coordinates of this cluster
 , coordinates :: Coordinates
 } deriving (Read, Show)
 
--- | The final clustering which is the result of the GSOM algorithm 
+-- | The final clustering which is the result of the GSOM algorithm
 -- is a @'Data.Map'@ mapping @'Coordinates'@ to @'Cluster'@s.
 type Clustering = Map Coordinates Cluster
 
@@ -134,32 +134,32 @@ type Clustering = Map Coordinates Cluster
 
 -- | Computes a clustering induced by the given lattice.
 --
--- @'clustering' lattice@ uses the @'weights'@ of the @'nodes'@ 
--- stored in @lattice@ to generate clusters and returns the 
+-- @'clustering' lattice@ uses the @'weights'@ of the @'nodes'@
+-- stored in @lattice@ to generate clusters and returns the
 -- @'Clustering'@ storing these clusters. Each non leaf node @n@ in @lattice@
--- cluster @c@ with @('coordinates' c = 'location' n)@ and with @'center' c@ 
--- equal to the weight vector of @n@. Each generated clusters contents are 
+-- cluster @c@ with @('coordinates' c = 'location' n)@ and with @'center' c@
+-- equal to the weight vector of @n@. Each generated clusters contents are
 -- empty.
 clustering :: Lattice -> IO Clustering
 clustering l = do
   ns <- atomically $ liftM (filter isNode) (nodes l)
-  associations <- atomically $ mapM (\n -> do 
+  associations <- atomically $ mapM (\n -> do
     ws <- readTVar $ weights n
     return $! (location n, ws)) ns
-  return $! Map.fromList $ map (\(xy, w) -> 
+  return $! Map.fromList $ map (\(xy, w) ->
     (xy, Cluster {center = w, contents = [], coordinates = xy})) associations
 
--- | @'cluster' inputs clustering@ clusters the given @inputs@ according to 
+-- | @'cluster' inputs clustering@ clusters the given @inputs@ according to
 -- the centers of the clusters in @clustering@. That means for each input @i@
--- from @inputs@ the index of @i@ is added to the contents of the cluster 
+-- from @inputs@ the index of @i@ is added to the contents of the cluster
 -- center to which @i@ has minimal distance.
 -- TODO: Implement tiebreaker.
 cluster :: Inputs -> Clustering -> Clustering
 cluster is cs = foldl' f cs (zip [0..] is) where
-  f cs (index, i) = let c = bmu i cs in 
+  f cs (index, i) = let c = bmu i cs in
     Map.insert (coordinates c) (c{contents = index : contents c}) cs
 
--- | @'nearestCluster' input clustering@ returns the cluster which has 
+-- | @'nearestCluster' input clustering@ returns the cluster which has
 -- the center with the smallest distance to @input@.
 nearestCluster :: Input -> Clustering -> Cluster
 nearestCluster = bmu

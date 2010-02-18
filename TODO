@@ -1,5 +1,5 @@
 IMPORTANT:
-  - Remember to add the default values of Gsom.Phase.Phase and predefined 
+  - Remember to add the default values of Gsom.Phase.Phase and predefined
     kernel functions.
 
 general:
@@ -10,24 +10,24 @@ general:
 node.hs;
   - try to express the type Node rather as type Maybe Node because otherwise
     I'm just constantly reinventing the Maybe wheel with Leaf as Nothing.
-    On the other hand the better way would probably be to change the neighbour 
-    representation to an association list having an (Int, TVar Node) pair as 
-    entries where each pair (i, n) means that n is the neigbour in direction 
-    i and where a missing entry for an index i means that there is no 
+    On the other hand the better way would probably be to change the neighbour
+    representation to an association list having an (Int, TVar Node) pair as
+    entries where each pair (i, n) means that n is the neigbour in direction
+    i and where a missing entry for an index i means that there is no
     neighbour in direction i. This may get rid of Leafs alltogether.
 
-  - Change the interface of Gsom.Node. Restrict creation of nodes so that 
+  - Change the interface of Gsom.Node. Restrict creation of nodes so that
     every newly created node is wrapped in a TVar.
 
-  - Refactor Gsom.Node.update to have a simpler type signature. Right now 
+  - Refactor Gsom.Node.update to have a simpler type signature. Right now
     it's just ridiculous.
 
 tests.hs:
-  - add test to check whether normlize acts as id on inputs which are already 
-    between 0 and 1 and which have active bounds 
+  - add test to check whether normlize acts as id on inputs which are already
+    between 0 and 1 and which have active bounds
     (NOTE: this is different from normlize/idempotent)
-    
-  - add tests for distance and bmu 
+
+  - add tests for distance and bmu
 
   - add a test case to catch the bug in Gsom.Lattice.new. The bug was, that
     all new nodes where initialized with their own TVars but they should've
@@ -35,11 +35,11 @@ tests.hs:
 
   - refactor the clunky normalize_unnormalize_id test.
 
-  - add test that the node given as an argument to neighbourhood is actually 
+  - add test that the node given as an argument to neighbourhood is actually
     an element of the returned neighbourhood.
 
-  - add test that checks whether neighbourhood actually calculates the 
-    correct neighbourhood to prevent the duplicating old nodes bug. 
+  - add test that checks whether neighbourhood actually calculates the
+    correct neighbourhood to prevent the duplicating old nodes bug.
     (looks like neighbourhood really should have a few tests)
 
   - add test for Gsom.Node.newWeight.
