@@ -124,7 +124,7 @@ data LearningRate =
   -- *@inverseAge lr step steps = lr * steps / (steps + 100 * step)@
   InverseAge Double deriving (Read, Show)
 
--- | Returns the learning rate adaption functino associated with the given
+-- | Returns the learning rate adaption function associated with the given
 -- type of learning rate.
 adaption :: LearningRate -> Int -> Int -> Double
 adaption (Linear d) = linear d
