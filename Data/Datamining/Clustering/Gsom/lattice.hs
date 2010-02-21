@@ -101,7 +101,7 @@ bmu i l = liftM (filter isNode) (nodes l) >>= (\l' ->
 grow :: Lattice -> Node -> STM (Lattice, Nodes)
 grow lattice node = do
   holes <- liftM (findIndices isLeaf) (unwrappedNeighbours node)
-  newLattice <- foldM (flip spawn node) lattice holes
+  newLattice <- foldM (`spawn` node) lattice holes
   spawned <- unwrappedNeighbours node >>= (\ns -> return $! map (ns !!) holes)
   return $! (newLattice, spawned)
 

@@ -96,6 +96,7 @@ import Data.Function
 import Data.List
 import Data.Map(Map(..))
 import qualified Data.Map as Map
+import Data.Ord
 
 ------------------------------------------------------------------------------
 -- Private modules
@@ -170,4 +171,4 @@ nearestCluster = bmu
 
 -- | Again computes the best matching unit, only this time it is pure.
 bmu :: Input -> Clustering -> Cluster
-bmu i = snd . minimumBy (compare `on` (distance i) . center . snd) . Map.assocs
+bmu i = snd . minimumBy (comparing $ distance i . center . snd) . Map.assocs

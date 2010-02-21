@@ -103,7 +103,7 @@ data Kernel =
   Gaussian deriving (Eq, Enum, Ord, Read, Show)
 
 -- | Returns the kernel function associated with the given kernel.
-kernelFunction :: Kernel -> (Double -> Int -> Double)
+kernelFunction :: Kernel -> Double -> Int -> Double
 kernelFunction Bubble = bubble
 kernelFunction Gaussian = gaussian
 
@@ -126,7 +126,7 @@ data LearningRate =
 
 -- | Returns the learning rate adaption functino associated with the given
 -- type of learning rate.
-adaption :: LearningRate -> (Int -> Int -> Double)
+adaption :: LearningRate -> Int -> Int -> Double
 adaption (Linear d) = linear d
 adaption (InverseAge d) = inverseAge d
 
@@ -146,7 +146,7 @@ phase ps lattice is =
     lR x = adaption (learningRate ps) x steps
     steps = passes ps * length is
     fI = fromIntegral
-    r x = ((1 - fI x / fI steps ) * fI (neighbourhoodSize ps)) :: Double
+    r x = (1 - fI x / fI steps ) * fI (neighbourhoodSize ps) :: Double
     consume (c, l) i = do
       winner <- atomically $ bmu i lattice
       atomically $ do

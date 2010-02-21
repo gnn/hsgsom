@@ -56,13 +56,13 @@ normalize' is = normalize (bounds is) is
 prop_normalize_idempotent s = (normalize'. normalize') s == normalize' s
 
 -- The result of normalize should contain only values between 0 and 1.
-prop_normalize_bounds s = all and . (map $ map test) $ normalize' s where
+prop_normalize_bounds s = all and . map (map test) $ normalize' s where
  test x = x>=0 && x<=1
 
 -- First normalizing and then unnormalizing a list should give the list back,
 -- but we have to accomodate for floating point precision errors.
 -- This test is horrible so I should try to reformulate it somehow.
 prop_unnormalize_normalize_id s =
-  (foldl max 0 $ map (foldl (max.abs) 0) $
+  foldl max 0 (map (foldl (max.abs) 0) $
     zipWith (<->) ((unnormalize bs . normalize bs) s) s) < 1*10**(-13)
       where bs = bounds s
