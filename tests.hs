@@ -9,7 +9,10 @@ import Prelude hiding (Either(..))
 import Test.QuickCheck
 
 -- Modules which are only imported so that functions of them can be tested.
-import Gsom.Input(bounds, normalize, unnormalize, (<->))
+import Data.Datamining.Clustering.Gsom.Input(bounds
+  , normalize
+  , unnormalize
+  , (<->))
 
 data Alignment = Left | Right
 
