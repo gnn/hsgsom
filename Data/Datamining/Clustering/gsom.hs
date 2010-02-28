@@ -61,8 +61,8 @@ module Data.Datamining.Clustering.Gsom (
 -- *** Querying a lattice
 , L.bmu, nodes
 
--- *** Debugging
-, putLattice, putWeights
+-- *** Debugging and Output
+, putLattice, putWeights, dumpInputs, renderScript
 
 -- * Running GSOM
 -- | The GSOM algorithm builds the map by sequentially @'run'@ning a given
@@ -164,6 +164,54 @@ cluster is cs = foldl' f cs (zip [0..] is) where
 -- the center with the smallest distance to @input@.
 nearestCluster :: Input -> Clustering -> Cluster
 nearestCluster = bmu
+
+-------------------------------------------------------------------------------
+-- Output
+-------------------------------------------------------------------------------
+
+-- | @'renderScript' c path@ expects to be given a 'Clustering' @c@
+-- having 2 dimensional 'center's and will call 'error' if that\'s not
+-- the case. On success it will save a python script to @path@.py. If
+-- this python script is run it will in turn save a PDF image to
+-- @path@.pdf. The image will contain the graph induced by @c@ with each
+-- node (cluster center) placed positioned according to the @c@\'s
+-- center (weight vector). The python script will depend on the
+-- @networkx@ and @mathplotlib@ python packages being installed.
+-- I know that this is relatively clunky, but since I haven't found a
+-- better way of creating an image of a graph with known node positions,
+-- this is the way I chose to go.
+renderScript :: Clustering -> String -> IO ()
+renderScript c destination = writeFile
+  (destination ++ ".py")
+  (head ++ nodes ++ edges ++ positions ++ writePdf) where
+  head = "#! /user/bin/env python\n" ++
+    "import networkx as nx\n" ++
+    "import matplotlib.pyplot as p\n\n" ++
+    "class constant_dict(dict):\n" ++
+    "  def __missing__(self, key):\n" ++
+    "    return None\n\n" ++
+    "class echo_dict(dict):\n" ++
+    "  def __missing__(self, key):\n" ++
+    "    return self.setdefault(key, key)\n\n\n" ++
+    "G = nx.Graph()\n"
+  nodes = "G.add_nodes_from(" ++ nodelist ++ ")\n"
+  nodelist = show [(x ,y) | [x,y] <- map (center) $ Map.elems c]
+  edges = "G.add_edges_from(" ++ edgelist ++ ")\n"
+  edgelist = show $ concatMap (edgesFrom) (Map.keys c)
+  edgesFrom coordinate = let [xc, yc] = center $ c Map.! coordinate in do
+    n <- map (neighbour coordinate) directions
+    [xn,yn] <- maybe [] (return.center) (Map.lookup n c)
+    return ((xc, yc), (xn, yn))
+  positions = "positions = echo_dict()\n"
+  writePdf = "p.clf()\n" ++
+    "nx.draw_networkx(G, positions, labels=constant_dict(), node_size=7)\n" ++
+    "p.savefig('" ++ destination ++ ".pdf')\n\n"
+
+-- | Dumps the given input vectors to a string which can be fed to
+-- gnuplot. Just write the string to a file and write @plot \"file\"@ in
+-- gnuplot.
+dumpInputs :: Inputs -> String
+dumpInputs = unlines . map (unwords . map show)
 
 ------------------------------------------------------------------------------
 -- Internal Functions
