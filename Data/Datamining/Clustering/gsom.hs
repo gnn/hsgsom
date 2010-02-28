@@ -142,9 +142,9 @@ type Clustering = Map Coordinates Cluster
 -- equal to the weight vector of @n@. Each generated clusters contents are
 -- empty.
 clustering :: Lattice -> IO Clustering
-clustering l = do
-  ns <- atomically $ liftM (filter isNode) (nodes l)
-  associations <- atomically $ mapM (\n -> do
+clustering l = atomically $ do
+  ns <- liftM (filter isNode) (nodes l)
+  associations <- mapM (\n -> do
     ws <- readTVar $ weights n
     return $! (location n, ws)) ns
   return $! Map.fromList $ map (\(xy, w) ->
