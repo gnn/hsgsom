@@ -22,6 +22,7 @@ module Data.Datamining.Clustering.Gsom.Phase(
 -- | The three default phases of the GSOM algorithm. They all use the
 -- bubble kernel and a linear learning rate decrease.
 , defaultFirst, defaultSecond, defaultThird, defaults
+, growthThreshold
 , phase
 , run
 , Kernel(..)
@@ -262,7 +263,7 @@ defaults :: Phases
 defaults = [defaultFirst, defaultSecond, defaultThird]
 
 ------------------------------------------------------------------------------
--- Internal functions
+-- Auxiliary Functions
 ------------------------------------------------------------------------------
 
 -- | Calculates the growth threshold as explained in the documentation
