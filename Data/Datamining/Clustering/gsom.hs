@@ -140,7 +140,9 @@ type Clustering = Map Coordinates Cluster
 -- @'Clustering'@ storing these clusters. Each non leaf node @n@ in @lattice@
 -- cluster @c@ with @('coordinates' c = 'location' n)@ and with @'center' c@
 -- equal to the weight vector of @n@. Each generated clusters contents are
--- empty.
+-- empty. Use the @cluster@ function with a set of inputs to obtain a
+-- clustering where each @Cluster@'s contents is a list of the indices of the
+-- input points belonging to this cluster.
 clustering :: Lattice -> IO Clustering
 clustering l = atomically $ do
   ns <- liftM (filter isNode) (nodes l)
