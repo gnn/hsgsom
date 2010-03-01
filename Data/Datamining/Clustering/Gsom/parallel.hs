@@ -57,3 +57,24 @@ work q l t = do
       else writeTVar q (tail is) >> return (Just $ head is)
   maybe $ return () $ consume q l t $ i
 
+-- | @'consume' q l t i@ consumes the input @i@, and then goes back to
+-- work.
+consume :: TVar Inputs -> TVar Lattice -> TVar Table -> Input -> IO ()
+consume q l t i = do
+  key <- atomically $ do
+    winner <- bmu i l
+    im <- readTVar table
+    let ks = keys im
+    let k = if null ks then 0 else head ks - 1
+    writeTVar table $ IM.insert k winner im
+    return k
+-- still have to figure out how this is going to work.
+    atomically $ do
+      affected <- neighbourhood winner $ round (r c)
+      mapM_ (update i (lR c) (kernelFunction (kernel ps) $ r c)) affected
+      newLattice <- if grow ps
+        then updateError winner i >> vent l winner gT
+        else return $! l
+-- and maybe this last part goes into the work function.
+  work q l t
+
