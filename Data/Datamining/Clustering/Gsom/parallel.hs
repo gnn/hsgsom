@@ -45,3 +45,15 @@ import Data.Datamining.Clustering.Gsom.Phase hiding (phase, run)
 -- changed safely in between transactions, and retrieved later.
 type Table = IntMap (Node, Input)
 
+-- | The worker action. @'work' queue lattice table@ repeatedly takes a
+-- point from the @queue@ and acts on it, modfying @lattice@ and using
+-- @table@ for storing and retrieving bmus.
+work :: TVar Inputs -> TVar Lattice -> TVar Table -> IO ()
+work q l t = do
+  i <- atomically $ do
+    is <- readTVar q
+    if null is
+      then return Nothing
+      else writeTVar q (tail is) >> return (Just $ head is)
+  maybe $ return () $ consume q l t $ i
+
