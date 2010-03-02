@@ -45,6 +45,17 @@ import Data.Datamining.Clustering.Gsom.Phase hiding (phase, run)
 -- changed safely in between transactions, and retrieved later.
 type Table = IntMap (Node, Input)
 
+-- | @'spawn' n action@ spawns @n@ worker threads doing action and
+-- returns a 'TVar' containing an integer which maintains acount of how
+-- many of the spawned threads are still alive.
+spawn :: Int -> IO () -> IO (TVar Int)
+spawn n action = do
+  alive <- atomically $ newTVar n
+  replicateM_ n . forkIO $
+      action `finally` (
+      atomically $ modifyTVar alive $ subtract 1)
+  return alive
+
 -- | The worker action. @'work' queue lattice table@ repeatedly takes a
 -- point from the @queue@ and acts on it, modfying @lattice@ and using
 -- @table@ for storing and retrieving bmus.
