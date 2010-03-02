@@ -157,4 +157,15 @@ modifyTVar v f = do
   writeTVar v $ f x
   return $! f x
 
+-- | Since a complete run of the GSOM algorithm means running a number
+-- of @'Phases'@ this is usually the main function used.  @run n phases
+-- lattice inputs@ runs the GSOM algorithm by running the @phases@ in
+-- the order specified, each time making passes over @inputs@ and using
+-- the produced @'Lattice'@ as an argument to the next phase.  The
+-- phases are run using @n@ worker threads.  The initial @'Lattice'@,
+-- @lattice@ may be constructed with the @'newRandom'@ and the
+-- @'newCentered'@ functions.
+run :: Int -> Phases -> Lattice -> Inputs -> IO Lattice
+run n ps lattice is = foldM f lattice ps where
+  f l p = phase n p l is
 
