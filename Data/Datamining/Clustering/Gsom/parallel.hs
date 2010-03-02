@@ -82,24 +82,28 @@ work q l t = do
 
 -- | @'consume' q l t i@ consumes the input @i@, and then goes back to
 -- work.
-consume :: TVar Inputs -> TVar Lattice -> TVar Table -> Input -> IO ()
-consume q l t i = do
+consume :: Config -> Input -> IO ()
+consume config i = do
   key <- atomically $ do
-    winner <- bmu i l
-    im <- readTVar table
-    let ks = keys im
+    winner <- readTVar (l' config) >>= bmu i
+    im <- readTVar (table config)
+    let ks = IM.keys im
     let k = if null ks then 0 else head ks - 1
-    writeTVar table $ IM.insert k winner im
+    writeTVar (table config) $ IM.insert k (winner, i) im
     return k
--- still have to figure out how this is going to work.
-    atomically $ do
-      affected <- neighbourhood winner $ round (r c)
-      mapM_ (update i (lR c) (kernelFunction (kernel ps) $ r c)) affected
-      newLattice <- if grow ps
-        then updateError winner i >> vent l winner gT
-        else return $! l
--- and maybe this last part goes into the work function.
-  work q l t
+  atomically $ do
+    s <- modifyTVar (step config) (+1)
+    winner <- liftM (fst.(IM.! key)) $ readTVar (table config)
+    modifyTVar (table config) $ IM.delete key
+    let r' = radius config s
+    affected <- neighbourhood winner $ round r'
+    mapM_ (update i (lR config s) (kF config r')) affected
+    l <- readTVar $ l' config
+    (ln, grown) <- if cfGrow config
+      then updateError winner i >> vent l winner (gT config)
+      else return $! (l, [])
+    forM_ (map snd affected ++ grown) (checkMin (table config))
+    writeTVar (l' config) ln
 
 checkMin :: TVar Table -> Node -> STM ()
 checkMin t' n = do
