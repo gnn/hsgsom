@@ -57,6 +57,18 @@ data Config = Config {gT :: Double
 , table :: TVar Table
 }
 
+-- | @'pass' n config inputs lattice@ will make one pass over the given
+-- @inputs@ spawning @n@ threads, adding the missing fields to @config@
+-- and modifying the wrapped lattice.
+pass :: Int -> Config -> Inputs -> TVar Lattice -> IO ()
+pass n conf is l = do
+  queue <- atomically $ newTVar is
+  table <- atomically $ newTVar $ IM.empty
+  count <- atomically $ newTVar 0
+  alive <- spawn n $ work conf{step = count, table=table, queue=queue, l'=l}
+  atomically $ do {ts <- readTVar alive; if ts /= 0 then retry else return ()}
+
+
 -- | @'spawn' n action@ spawns @n@ worker threads doing action and
 -- returns a 'TVar' containing an integer which maintains acount of how
 -- many of the spawned threads are still alive.
