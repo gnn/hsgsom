@@ -115,7 +115,7 @@ propagate :: Node -> Nodes -> STM ()
 propagate node affected = do
   let factor = fromIntegral $ length affected
   error <- readTVar $ quantizationError node
-  modify node quantizationError (/2)
+  when (factor == 6) $ modify node quantizationError (/2)
   mapM_ (\n -> modify n quantizationError (+ 0.5 * error / factor)) affected
 
 ------------------------------------------------------------------------------
