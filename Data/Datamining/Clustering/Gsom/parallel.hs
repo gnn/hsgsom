@@ -45,6 +45,18 @@ import Data.Datamining.Clustering.Gsom.Phase hiding (phase, run)
 -- changed safely in between transactions, and retrieved later.
 type Table = IntMap (Node, Input)
 
+-- | The immutable configuration shared by every worker thread.
+data Config = Config {gT :: Double
+, lR :: Int -> Double
+, kF :: Double -> Int -> Double
+, cfGrow :: Bool
+, radius :: Int -> Double
+, step :: TVar Int
+, queue :: TVar Inputs
+, l' :: TVar Lattice
+, table :: TVar Table
+}
+
 -- | @'spawn' n action@ spawns @n@ worker threads doing action and
 -- returns a 'TVar' containing an integer which maintains acount of how
 -- many of the spawned threads are still alive.

@@ -25,8 +25,8 @@ module Data.Datamining.Clustering.Gsom.Phase(
 , growthThreshold
 , phase
 , run
-, Kernel(..)
-, LearningRate(..),
+, Kernel(..), kernelFunction
+, LearningRate(..), adaption
 ) where
 
 ------------------------------------------------------------------------------
