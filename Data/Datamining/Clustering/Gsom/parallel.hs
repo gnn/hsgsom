@@ -71,14 +71,14 @@ spawn n action = do
 -- | The worker action. @'work' queue lattice table@ repeatedly takes a
 -- point from the @queue@ and acts on it, modfying @lattice@ and using
 -- @table@ for storing and retrieving bmus.
-work :: TVar Inputs -> TVar Lattice -> TVar Table -> IO ()
-work q l t = do
+work :: Config -> IO ()
+work config = do
   i <- atomically $ do
-    is <- readTVar q
+    is <- readTVar $ queue config
     if null is
       then return Nothing
-      else writeTVar q (tail is) >> return (Just $ head is)
-  maybe $ return () $ consume q l t $ i
+      else writeTVar (queue config) (tail is) >> return (Just $ head is)
+  maybe (return ()) (\x -> do{consume config x; work config}) i
 
 -- | @'consume' q l t i@ consumes the input @i@, and then goes back to
 -- work.
