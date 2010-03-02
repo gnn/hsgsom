@@ -137,21 +137,23 @@ spawn lattice parent direction = let
 -- the errror value is below the growth threshhold. Otherwise it will either
 -- spawn new nodes or it will propagate the accumulated error value to it's
 -- neighbours, depending on whether the node is a boundary node or not.
--- If new nodes are spawned they will be added to @lattice@.
+-- If new nodes are spawned they will be added to @lattice@ and returned as
+-- the second component of the resulting pair.
 
-vent :: Lattice -> Node -> Double -> STM Lattice
+vent :: Lattice -> Node -> Double -> STM (Lattice, [Node])
 vent _ Leaf _  = error "in vent: vent called with a Leaf as argument."
 vent lattice node gt = do
   qE <- readTVar $ quantizationError node
   if qE > gt then do
     ns <- unwrappedNeighbours node
     let leaves = findIndices isLeaf ns
-    (newLattice, affected) <- if null leaves
+    let noleaves = null leaves
+    r@(l', affected) <- if noleaves
       then return $! (lattice, ns)
       else grow lattice node
     propagate node affected
-    return $! newLattice
-    else return $! lattice
+    return $! if noleaves then (lattice, []) else r
+    else return $! (lattice, [])
 ------------------------------------------------------------------------------
 -- Internal
 ------------------------------------------------------------------------------

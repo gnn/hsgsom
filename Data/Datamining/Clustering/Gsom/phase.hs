@@ -154,7 +154,7 @@ phase ps lattice is =
         affected <- neighbourhood winner $ round (r c)
         mapM_ (update i (lR c) (kernelFunction (kernel ps) $ r c)) affected
         newLattice <- if grow ps
-          then updateError winner i >> vent l winner gT
+          then liftM fst $ updateError winner i >> vent l winner gT
           else return $! l
         return $! (c + 1, newLattice)
 
