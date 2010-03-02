@@ -101,6 +101,20 @@ consume q l t i = do
 -- and maybe this last part goes into the work function.
   work q l t
 
+checkMin :: TVar Table -> Node -> STM ()
+checkMin t' n = do
+  w <- readTVar $ weights n
+  t <- readTVar t'
+  ks<- liftM (map fst) $ filterM (smaller w) (IM.assocs t)
+  let tn = foldr (IM.adjust $ newNode n) t ks
+  unless (null ks) (writeTVar t' tn) where
+  smaller w (k, (n', i)) = do
+    w' <- readTVar $ weights n'
+    let {d' = distance w' i; d = distance w i}
+    boundary <- boundaryNode n'
+    return (d' < d || (d' == d && boundary))
+  newNode n' (n,i) = (n',i)
+
 modifyTVar :: TVar a -> (a -> a) -> STM a
 modifyTVar v f = do
   x <- readTVar v
