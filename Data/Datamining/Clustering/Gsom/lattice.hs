@@ -84,9 +84,12 @@ bmu i l = liftM (filter isNode) (nodes l) >>= (\l' ->
     (x:xs) ->
       foldM (\n1 n2 -> do
         w1 <- ws n1
+        boundary <- boundaryNode n1
         w2 <- ws n2
-        return $! if distance i w1 <= distance i w2
-          then n1 else n2)
+        let {d1 = distance i w1; d2 = distance i w2}
+        return $! if d1 < d2 || (d1 == d2 && boundary)
+          then n1
+          else n2)
       x xs
   )
 
