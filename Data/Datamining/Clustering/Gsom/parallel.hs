@@ -54,7 +54,7 @@ data Config = Config {gT :: Double
 , radius :: Int -> Double
 , step :: TVar Int
 , queue :: TVar Inputs
-, l' :: TVar Lattice
+, cfL :: TVar Lattice
 , table :: TVar Table
 }
 
@@ -63,9 +63,12 @@ data Config = Config {gT :: Double
 -- and @parameters@ using @n@ threads.
 phase :: Int -> Phase -> Lattice -> Inputs -> IO Lattice
 phase n ps lattice is = do
-  l' <- atomically $ newTVar lattice
-  sequence_ (replicate (passes ps) (pass n config is l'))
-  atomically $ readTVar l' where
+  count <- atomically $ newTVar 0
+  l <- atomically $ newTVar lattice
+  sequence_ (replicate
+    (passes ps)
+    (pass n config{step = count, cfL = l} is))
+  atomically $ readTVar l where
     config = Config {gT = growthThreshold ps $ dimension is
     , lR = flip (adaption (learningRate ps)) steps
     , kF = kernelFunction (kernel ps)
@@ -73,7 +76,7 @@ phase n ps lattice is = do
     , radius = \s -> (1 - fI s / fI steps ) * fI (neighbourhoodSize ps)
     -- Intentionally undefined empty because they should defined locally
     -- in each pass
-    , step = undefined, queue = undefined, l' = undefined, table = undefined
+    ,cfL = undefined, step = undefined, queue = undefined, table = undefined
     }
     fI = fromIntegral
     steps = passes ps * length is
@@ -81,12 +84,11 @@ phase n ps lattice is = do
 -- | @'pass' n config inputs lattice@ will make one pass over the given
 -- @inputs@ spawning @n@ threads, adding the missing fields to @config@
 -- and modifying the wrapped lattice.
-pass :: Int -> Config -> Inputs -> TVar Lattice -> IO ()
-pass n conf is l = do
+pass :: Int -> Config -> Inputs -> IO ()
+pass n conf is = do
   queue <- atomically $ newTVar is
   table <- atomically $ newTVar $ IM.empty
-  count <- atomically $ newTVar 0
-  alive <- spawn n $ work conf{step = count, table=table, queue=queue, l'=l}
+  alive <- spawn n $ work conf{table=table, queue=queue}
   atomically $ do {ts <- readTVar alive; if ts /= 0 then retry else return ()}
 
 
@@ -118,7 +120,7 @@ work config = do
 consume :: Config -> Input -> IO ()
 consume config i = do
   key <- atomically $ do
-    winner <- readTVar (l' config) >>= bmu i
+    winner <- readTVar (cfL config) >>= bmu i
     im <- readTVar (table config)
     let ks = IM.keys im
     let k = if null ks then 0 else head ks - 1
@@ -131,12 +133,12 @@ consume config i = do
     let r' = radius config s
     affected <- neighbourhood winner $ round r'
     mapM_ (update i (lR config s) (kF config r')) affected
-    l <- readTVar $ l' config
+    l <- readTVar $ cfL config
     (ln, grown) <- if cfGrow config
       then updateError winner i >> vent l winner (gT config)
       else return $! (l, [])
     forM_ (map snd affected ++ grown) (checkMin (table config))
-    writeTVar (l' config) ln
+    writeTVar (cfL config) ln
 
 checkMin :: TVar Table -> Node -> STM ()
 checkMin t' n = do
