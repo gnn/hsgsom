@@ -101,3 +101,10 @@ consume q l t i = do
 -- and maybe this last part goes into the work function.
   work q l t
 
+modifyTVar :: TVar a -> (a -> a) -> STM a
+modifyTVar v f = do
+  x <- readTVar v
+  writeTVar v $ f x
+  return $! f x
+
+
