@@ -57,6 +57,26 @@ data Config = Config {gT :: Double
 , table :: TVar Table
 }
 
+-- | @'phase' n parameters inputs@ will update the given @lattice@ by
+-- executing one phase of the GSOM algorithm with the given @inputs@
+-- and @parameters@ using @n@ threads.
+phase :: Int -> Phase -> Lattice -> Inputs -> IO Lattice
+phase n ps lattice is = do
+  l' <- atomically $ newTVar lattice
+  sequence_ (replicate (passes ps) (pass n config is l'))
+  atomically $ readTVar l' where
+    config = Config {gT = growthThreshold ps $ dimension is
+    , lR = flip (adaption (learningRate ps)) steps
+    , kF = kernelFunction (kernel ps)
+    , cfGrow = grow ps
+    , radius = \s -> (1 - fI s / fI steps ) * fI (neighbourhoodSize ps)
+    -- Intentionally undefined empty because they should defined locally
+    -- in each pass
+    , step = undefined, queue = undefined, l' = undefined, table = undefined
+    }
+    fI = fromIntegral
+    steps = passes ps * length is
+
 -- | @'pass' n config inputs lattice@ will make one pass over the given
 -- @inputs@ spawning @n@ threads, adding the missing fields to @config@
 -- and modifying the wrapped lattice.
