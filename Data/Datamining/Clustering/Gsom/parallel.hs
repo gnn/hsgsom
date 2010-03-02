@@ -12,7 +12,8 @@
 -- parallelise a phase of the GSOM Algorithm by using multiple threads.
 ------------------------------------------------------------------------------
 
-module Data.Datamining.Clustering.Gsom.parallel() where
+module Data.Datamining.Clustering.Gsom.Parallel(
+phase, run) where
 
 ------------------------------------------------------------------------------
 -- Standard modules
