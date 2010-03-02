@@ -16,6 +16,7 @@
 module Data.Datamining.Clustering.Gsom.Node(
     Neighbours, Neighbourhood, Node(..), Nodes
   , isLeaf, isNode, neighbourhood, newWeight, node, propagate, putNode
+  , boundaryNode
   , unwrappedNeighbours, update, updateError) where
 
 
@@ -158,6 +159,11 @@ neighbourhood node radius = iterate (
 -- @'Nodes'@ not @TVar 'Nodes'@.
 unwrappedNeighbours :: Node -> STM Nodes
 unwrappedNeighbours = mapM readTVar . neighbours
+
+boundaryNode :: Node -> STM Bool
+boundaryNode n = do
+  ns <- unwrappedNeighbours n
+  return $! null (filter isLeaf ns)
 
 ------------------------------------------------------------------------------
 -- Utility functions. Not exportet.
