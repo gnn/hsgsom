@@ -33,6 +33,7 @@ Library
                     Data.Datamining.Clustering.Gsom.Input,
                     Data.Datamining.Clustering.Gsom.Lattice,
                     Data.Datamining.Clustering.Gsom.Node,
+                    Data.Datamining.Clustering.Gsom.Parallel,
                     Data.Datamining.Clustering.Gsom.Phase
 
   GHC-Options:     -O2 -fvia-C -optc-O3
