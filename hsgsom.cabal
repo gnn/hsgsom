@@ -36,5 +36,5 @@ Library
                     Data.Datamining.Clustering.Gsom.Parallel,
                     Data.Datamining.Clustering.Gsom.Phase
 
-  GHC-Options:     -O2 -fvia-C -optc-O3
+  GHC-Options:     -O2 -fvia-C -optc-O3 -threaded
 
