@@ -147,7 +147,7 @@ vent lattice node gt = do
     ns <- unwrappedNeighbours node
     let leaves = findIndices isLeaf ns
     (newLattice, affected) <- if null leaves
-      then liftM ((,) lattice) (neighbourhood node 1 >>= mapM (return . snd))
+      then return $! (lattice, ns)
       else grow lattice node
     propagate node affected
     return $! newLattice
