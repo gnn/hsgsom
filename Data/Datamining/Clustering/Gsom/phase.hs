@@ -135,28 +135,60 @@ adaption (InverseAge d) = inverseAge d
 -- Running phases
 ------------------------------------------------------------------------------
 
+-- | Parameters which have to be passed around between the functions
+-- used to execute a phase.
+data Config = Config {gT :: Double  -- ^ Growth Threshold
+, lR :: Int -> Double               -- ^ Learning Rate (Function of the step)
+, kF :: Double -> Int -> Double     -- ^ Kernel Function
+, gR :: Bool                        -- ^ Growing Flag
+, rS :: Int -> Double               -- ^ Radius (Function of the step)
+, sT :: TVar Int                    -- ^ Current step number
+, wL :: TVar Lattice                -- ^ wrapped Lattice
+}
+
 -- | @'phase' parameters inputs@ will update the given @lattice@ by
 -- executing one phase of the GSOM algorithm with the given @inputs@
 -- and @parameters@.
 phase :: Phase -> Lattice -> Inputs -> IO Lattice
-phase ps lattice is =
-  liftM snd $
-  foldl' (>>=) (return (0, lattice)) (replicate (passes ps) pass) where
-    pass state = foldM consume state is
-    gT = growthThreshold ps $ dimension is
-    lR x = adaption (learningRate ps) x steps
-    steps = passes ps * length is
-    fI = fromIntegral
-    r x = (1 - fI x / fI steps ) * fI (neighbourhoodSize ps) :: Double
-    consume (c, l) i = do
-      winner <- atomically $ bmu i lattice
-      atomically $ do
-        affected <- neighbourhood winner $ round (r c)
-        mapM_ (update i (lR c) (kernelFunction (kernel ps) $ r c)) affected
-        newLattice <- if grow ps
-          then liftM fst $ updateError winner i >> vent l winner gT
-          else return $! l
-        return $! (c + 1, newLattice)
+phase ps lattice is = do
+  s <- atomically $ newTVar 0
+  l <- atomically $ newTVar lattice
+  sequence_ (replicate
+    (passes ps)
+    (pass
+      Config{gT = growthThreshold ps $ dimension is
+      , lR = flip (adaption (learningRate ps)) steps
+      , kF = kernelFunction (kernel ps)
+      , gR = grow ps
+      , rS = \x -> (1 - fI x / fI steps ) * fI (neighbourhoodSize ps)
+      , sT = s
+      , wL = l}
+      is))
+  atomically $ readTVar l where
+  pass config is = mapM_ (consume config) is
+  steps = passes ps * length is
+  fI = fromIntegral
+
+-- | @'consume' confi i@ consumes the input @i@.
+consume :: Config -> Input -> IO ()
+consume config i = do
+  winner <- atomically $ readTVar (wL config) >>= bmu i
+  atomically $ do
+    s <- modifyTVar (sT config) (+1)
+    l <- readTVar $ wL config
+    let r = rS config s
+    affected <- neighbourhood winner $ round r
+    mapM_ (update i (lR config s) (kF config r)) affected
+    nL <- if gR config
+      then liftM fst $ updateError winner i >> vent l winner (gT config)
+      else return $! l
+    writeTVar (wL config) nL
+
+modifyTVar :: TVar a -> (a -> a) -> STM a
+modifyTVar v f = do
+  x <- readTVar v
+  writeTVar v $ f x
+  return $! f x
 
 -- | Since a complete run of the GSOM algorithm means running a number of
 -- @'Phases'@ this is usually the main function used.
