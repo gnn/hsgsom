@@ -113,7 +113,7 @@ work config = do
     if null is
       then return Nothing
       else writeTVar (queue config) (tail is) >> return (Just $ head is)
-  maybe (return ()) (\x -> do{consume config x; work config}) i
+  maybe (return ()) (consume config) i
 
 -- | @'consume' q l t i@ consumes the input @i@, and then goes back to
 -- work.
@@ -139,6 +139,7 @@ consume config i = do
       else return $! (l, [])
     forM_ (map snd affected ++ grown) (checkMin (table config))
     writeTVar (cfL config) ln
+  work config
 
 checkMin :: TVar Table -> Node -> STM ()
 checkMin t' n = do
