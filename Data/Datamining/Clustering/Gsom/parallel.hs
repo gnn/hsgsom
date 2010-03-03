@@ -67,7 +67,7 @@ phase n ps lattice is = do
   l <- atomically $ newTVar lattice
   sequence_ (replicate
     (passes ps)
-    (pass n config{step = count, cfL = l} is))
+    (pass threads config{step = count, cfL = l} is))
   atomically $ readTVar l where
     config = Config {gT = growthThreshold ps $ dimension is
     , lR = flip (adaption (learningRate ps)) steps
@@ -78,6 +78,7 @@ phase n ps lattice is = do
     -- in each pass
     ,cfL = undefined, step = undefined, queue = undefined, table = undefined
     }
+    threads = if (grow ps) then 1 else n
     fI = fromIntegral
     steps = passes ps * length is
 
@@ -137,7 +138,7 @@ consume config i = do
     (ln, grown) <- if cfGrow config
       then updateError winner i >> vent l winner (gT config)
       else return $! (l, [])
-    forM_ (map snd affected ++ grown) (checkMin (table config))
+    forM_ (map snd affected) (checkMin (table config))
     writeTVar (cfL config) ln
   work config
 
