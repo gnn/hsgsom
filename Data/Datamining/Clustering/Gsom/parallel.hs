@@ -89,7 +89,7 @@ pass n conf is = do
   queue <- atomically $ newTVar is
   table <- atomically $ newTVar $ IM.empty
   alive <- spawn n $ work conf{table=table, queue=queue}
-  atomically $ do {ts <- readTVar alive; if ts /= 0 then retry else return ()}
+  atomically $ do {ts <- readTVar alive; if ts > 0 then retry else return ()}
 
 
 -- | @'spawn' n action@ spawns @n@ worker threads doing action and
