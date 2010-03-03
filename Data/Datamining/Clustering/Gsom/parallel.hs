@@ -74,7 +74,7 @@ phase n ps lattice is = do
     , kF = kernelFunction (kernel ps)
     , cfGrow = grow ps
     , radius = \s -> (1 - fI s / fI steps ) * fI (neighbourhoodSize ps)
-    -- Intentionally undefined empty because they should defined locally
+    -- Intentionally undefined empty because they should be defined locally
     -- in each pass
     ,cfL = undefined, step = undefined, queue = undefined, table = undefined
     }
