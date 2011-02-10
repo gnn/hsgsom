@@ -1,5 +1,7 @@
 Changes in version 0.2.0
 
+  * Bump required Cabal version
+
   * Add this changelog file
 
   * Make *.hs files start with an uppercase letter.

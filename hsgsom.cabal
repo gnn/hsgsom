@@ -1,6 +1,6 @@
 Name:               hsgsom
 Version:            0.1.0
-Cabal-Version:      >= 1.6.0.1
+Cabal-Version:      >= 1.6.0.3
 Build-Type:         Simple
 License:            BSD3
 License-File:       LICENSE
