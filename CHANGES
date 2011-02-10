@@ -1,0 +1,45 @@
+Changes in version 0.2.0
+
+  * Add this changelog file
+
+  * Make *.hs files start with an uppercase letter.
+
+  * Add the experimental 'Parallel' module, exposing a parallelized
+    version of the algorithm.
+    *BEWARE*: This is likely to contain bugs or exhibit strange
+    behaviour. Work in progress.
+
+  * Resolve ties between nodes with same distance in BMU calculation
+    like in the reference implementation and paper (boundary nodes are
+    preferred).
+
+  * New type: 'Config'; a clunky everything bucket for phase parameters
+
+  * API change: 'vent' now also returns spawned nodes
+
+  * API addition: add function 'boundaryNode'; checks whether a node is
+    on the boundary
+
+  * API addition: export function 'growthThreshold'; was private to
+    'Phase' module; is now needed by the 'Parallel' module
+
+  * API addition: 'dumpInputs' and 'renderScript' functions; they are
+    hacky and likely to change, but maybe they are useful
+
+  * Fix (major): single-threaded 'phase' implementation now responds to
+    the spread factor. I have no idea where that regression came from
+    and hope it is fixed now.
+
+  * Fix (minor): passes now reach maximum step size.
+
+  * Fix (minor): haddock clarification, grammar, typo and link fixes
+
+  * Fix (minor): act more closely to the reference implementation when
+    new nodes are created
+
+  * Fix (minor): error is not propagated back to the node from which it
+    originated
+
+  * Fix (minor): weight vector calculation of new nodes now actually
+    acts as documented
+
